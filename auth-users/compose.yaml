@@ -1,0 +1,16 @@
+services:
+  mysql_users:
+    image: 'mysql:latest'
+    environment:
+      - 'MYSQL_DATABASE=cyna_users'
+      - 'MYSQL_PASSWORD=cyna_users_pwd'
+      - 'MYSQL_ROOT_PASSWORD=cyna_pwd'
+      - 'MYSQL_USER=user_users'
+    ports:
+      - '3307:3306'
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+

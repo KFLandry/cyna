@@ -1,0 +1,10 @@
+services:
+  mysql:
+    image: 'mysql:latest'
+    environment:
+      - 'MYSQL_DATABASE=cyna_sav'
+      - 'MYSQL_PASSWORD=cyna_sav_pwd'
+      - 'MYSQL_ROOT_PASSWORD=cyna_pwd'
+      - 'MYSQL_USER=user_sav'
+    ports:
+      - '3310:3306'

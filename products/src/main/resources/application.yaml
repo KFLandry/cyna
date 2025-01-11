@@ -1,0 +1,38 @@
+spring:
+  application:
+    name: products
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/cyna_products
+    username: cyna_products_pwd
+    password: cyna_products_pwd
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+    defer-datasource-initialization: true
+
+  docker:
+    compose:
+      file: products/compose.yaml
+
+server:
+  port: 8082
+
+#Logging
+logging:
+  level:
+    root: debug
+    web: debug
+  file:
+    name: ./target/cyna-products.log
+
+eureka:
+  instance:
+    hostname: localhost
+    prefer-ip-address: false

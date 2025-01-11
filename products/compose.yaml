@@ -1,0 +1,16 @@
+services:
+  mysql_products:
+    image: 'mysql:latest'
+    environment:
+      - 'MYSQL_DATABASE=cyna_products'
+      - 'MYSQL_PASSWORD=cyna_products_pwd'
+      - 'MYSQL_ROOT_PASSWORD=cyna_pwd'
+      - 'MYSQL_USER=user_products'
+    ports:
+      - '3308:3306'
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+

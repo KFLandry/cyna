@@ -1,0 +1,46 @@
+spring:
+  application:
+      name: auth-users
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/cyna_users
+    username: cyna_users_pwd
+    password: cyna_users_pwd
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+    defer-datasource-initialization: true
+
+  docker:
+    compose:
+      file: auth-users/compose.yaml
+
+server:
+  port: 8081
+
+#Logging
+logging:
+  level:
+    root: debug
+    web: debug
+    org.springframework.security: DEBUG
+    org.springframework.security.web.FilterChainProxy: DEBUG
+    org.springframework.web: DEBUG
+  file:
+    name: ./target/cyna-auth-users.log
+
+#jwt
+jwt:
+  secret: 7405b08c15e2003d093c644c5b6a506a8264f8bbe9f10631c22e731b260c415801e0321e14735d174b7a774ac6bbba8e8d8a7b5ecf0022df46121ae3921d095f46f08c1aab6a3062d355e30902368b7ba113a0b8b5ad558edc58db9442f651a25781103d5365a895824e5d7bf1da0e9a60a77f9ee4d9076c4a6a7ade8815c717ba79fb98da2e93c70d78dad4a6df0d6dcdd4eccf48e7eb6b294659e88cc53b435c475c41649cad4e8a52e6d0b9ad5b2b828659d92cebd21599455952e57b0011d3a743862e064a58b1b027ea4ab98cce0fcacf37c355629c81be5561e8566ce46a8be1f6363b9beb08853b7e449ff39cd5ba9deca42c40465b5049c0ff900239
+  expiration: 3600000
+
+eureka:
+  instance:
+    hostname: localhost
+    prefer-ip-address: false
