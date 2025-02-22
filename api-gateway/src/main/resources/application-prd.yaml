@@ -1,0 +1,63 @@
+server:
+  port: 8080
+
+spring:
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lowerCaseServiceId: true
+      routes:
+        - id: auth-users
+          uri: lb://auth-users
+          predicates:
+            - Path=/api/v1/auth/**
+
+        - id: user-service
+          uri: lb://auth-users
+          predicates:
+            - Path=/api/v1/user/**,/api/v1/address/**,/api/v1/card/**,/auth-users/
+          filters:
+            - name: JwtAuth
+
+        - id: products
+          uri: lb://products
+          predicates:
+            - Path=/api/v1/products/**,/api/v1/categories/**, /products/
+
+        - id: orders
+          uri: lb://orders
+          predicates:
+            - Path=/api/v1/orders/**, /orders/
+          filters:
+            - name: JwtAuth
+
+        - id: sav
+          uri: lb://sav
+          predicates:
+            - Path=/api/v1/sav/**, /sav/
+
+        - id: payment
+          uri: lb://payment
+          predicates:
+            - Path=/api/v1/payment/**
+          filters:
+            - name: JwtAuth
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    hostname: localhost
+    preferIpAddress: false
+logging:
+  level:
+    org.springframework.cloud.gateway: INFO
+    org.springframework.cloud.netflix: INFO
+
+  file:
+    name: ./target/api-gateway.log

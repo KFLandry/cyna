@@ -1,12 +1,10 @@
 package com.cyna.auth_users.auth.dto;
 
-import lombok.AllArgsConstructor;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
 public class TokenValidationRequest {
+    @NotNull(message = "Le token en vide")
     private String token;
 }

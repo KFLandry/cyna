@@ -1,8 +1,9 @@
 package com.cyna.auth_users.auth.service;
 
 import com.cyna.auth_users.auth.dto.AuthResponse;
+import com.cyna.auth_users.auth.dto.CreateUserDto;
 import com.cyna.auth_users.auth.dto.LoginRequest;
-import com.cyna.auth_users.auth.dto.RegisterRequest;
+import com.cyna.auth_users.users.dto.UserDto;
 import com.cyna.auth_users.auth.dto.ValidationResult;
 import com.cyna.auth_users.users.repositories.UserRepository;
 import com.cyna.auth_users.users.models.ROLE;
@@ -64,13 +65,15 @@ public class AuthService {
     }
 
 
-    public AuthResponse register(RegisterRequest request) {
+    public AuthResponse register(CreateUserDto request) {
         User user = User.builder()
                 .firstname(request.getFirstname())
                 .lastname(request.getLastname())
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .roles(ROLE.valueOf(request.getRole()))
+                .enabled(true)
+                .emailVerified(false)
                 .build();
         repository.save(user);
         String jwtToken = jwtService.generateToken(user);

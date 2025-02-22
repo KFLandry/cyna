@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
 import java.util.Set;
 
 @RestController
@@ -17,23 +18,18 @@ public class ProductController {
 
     private final ProductService productService;
 
-    @GetMapping
-    public String index() {
-        return "Hello World, I'm product service";
-    }
-
     @GetMapping("/{productId}")
     public ResponseEntity<Product> getProduct(@PathVariable long productId) {
         return ResponseEntity.ok(productService.getProduct(productId));
     }
 
     @GetMapping
-    public ResponseEntity<Set<Product>> getProducts() {
+    public ResponseEntity<List<Product>> getProducts() {
         return ResponseEntity.ok(productService.getProducts());
     }
 
     @GetMapping("/search")
-    public ResponseEntity<Set<Product>> searchProducts(@RequestParam(required = false) String text){
+    public ResponseEntity<List<Product>> searchProducts(@RequestParam(required = false) String text){
         return ResponseEntity.ok(productService.findByText(text));
     }
 

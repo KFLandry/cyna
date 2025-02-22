@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -81,11 +82,11 @@ public class ProductService {
 
     }
 
-    public Set<Product> getProducts() {
-        return (Set<Product>) productRepo.findAll();
+    public List<Product> getProducts() {
+        return (List<Product>) productRepo.findAll();
     }
 
-    public Set<Product> findByText(String text) {
+    public List<Product> findByText(String text) {
         return productRepo.findByText(text);
     }
 

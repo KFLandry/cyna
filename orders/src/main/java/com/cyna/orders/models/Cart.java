@@ -1,5 +1,6 @@
 package com.cyna.orders.models;
 
+import com.cyna.orders.dto.UserDto;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -10,18 +11,17 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
-@Data
+// @AllArgsConstructor
+// @NoArgsConstructor
+// @Builder
+// @Data
 public class Cart {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+     @JoinColumn(name = "user_id", nullable = false)
+     private Long user;
 
     @OneToMany(cascade = CascadeType.REMOVE, fetch = FetchType.LAZY , mappedBy = "cart")
     private List<CartItem> cartItems;

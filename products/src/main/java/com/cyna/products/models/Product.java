@@ -1,5 +1,6 @@
 package com.cyna.products.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,7 +16,7 @@ import java.util.Set;
 @Builder
 @Data
 @Table(name = "products", indexes = {
-        @Index(name = "idx_fulltext", columnList = "name,description,caracteristics,brand")
+        @Index(name = "idx_fulltext", columnList = "name, description, brand")
 })
 public class Product {
     @Id
@@ -28,10 +29,10 @@ public class Product {
     @Column(nullable = false)
     private String brand;
 
-    @Column(nullable = false, columnDefinition = "TEXT")
+    @Column(nullable = false)
     private String description;
 
-    @Column(nullable = false, columnDefinition = "TEXT")
+    @Column(nullable = false, columnDefinition = ("TEXT"))
     private String caracteristics;
 
     @Column(nullable = false)
@@ -43,6 +44,7 @@ public class Product {
 
     @ManyToOne
     @JoinColumn(nullable = false, name = "category_id")
+    @JsonIgnore
     private Category category;
 
     @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)

@@ -28,7 +28,7 @@ public class CategoryController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<Set<Category>> getCategoriesByName(@RequestParam String name) {
+    public ResponseEntity<List<Category>> getCategoriesByName(@RequestParam String name) {
         return ResponseEntity.ok(categoryService.getCategoryByName(name));
     }
     @PostMapping

@@ -7,18 +7,17 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
-@Data
+ @AllArgsConstructor
+ @NoArgsConstructor
+ @Builder
+ @Data
 public class OrderItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "product_id", nullable = false)
-    private Product product;
+     @JoinColumn(name = "product_id", nullable = false)
+     private Long product;
 
     @ManyToOne
     @JoinColumn(name = "orders_id", nullable = false)

@@ -9,7 +9,7 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
-@Entity
+@Entity(name = "media_user")
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder

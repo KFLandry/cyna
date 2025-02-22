@@ -7,13 +7,14 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Set;
 
 @Repository
 public interface ProductRepo extends CrudRepository<Product, Long>{
-    @Query(value = "SELECT * FROM product WHERE " +
-            "MATCH(name, description, caracteristics, brand) " +
-            "AGAINST(:word IN BOOLEAN MODE)",
+    @Query(value = "SELECT * FROM products WHERE " +
+            "MATCH(name, description, brand) " +
+            "AGAINST(:text IN BOOLEAN MODE)",
             nativeQuery = true)
-    Set<Product> findByText(@Param("text") String text);
+    List<Product> findByText(@Param("text") String text);
 }

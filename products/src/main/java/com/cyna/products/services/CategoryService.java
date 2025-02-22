@@ -50,8 +50,8 @@ public class CategoryService {
         return category;
     }
 
-    public Set<Category> getCategoryByName(String name) {
-        Set<Category> categories = categoryRepo.findByName(name);
+    public List<Category> getCategoryByName(String name) {
+        List<Category> categories = categoryRepo.findByName(name);
         categories.forEach(category -> this.pathToUrl(category.getImages()));
         return categories;
     }

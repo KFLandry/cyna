@@ -1,5 +1,6 @@
 package com.cyna.auth_users.users.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -31,22 +32,28 @@ public class User implements UserDetails {
     @Column(nullable = false, unique = true)
     private String email;
 
-    private Integer phone;
+    @Column(nullable = false, columnDefinition = "boolean default true")
+    private Boolean enabled;
+
+    @Column(nullable = false, columnDefinition = "boolean default false")
+    private Boolean emailVerified;
+
+    private Long phone;
+
+    private String urlProfile;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private ROLE roles;
 
-    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.REMOVE, mappedBy = "user")
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, mappedBy = "user")
     private List<Address> addresses;
 
-    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.REMOVE, mappedBy = "user")
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, mappedBy = "user")
     private List<BankCard> cards;
 
-    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.REMOVE, mappedBy = "user")
-    private List<Media> profileImage;
-
     @Column(nullable = false)
+    @JsonIgnore
     private String password;
 
     @Override

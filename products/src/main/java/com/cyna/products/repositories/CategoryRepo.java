@@ -14,6 +14,6 @@ import java.util.Set;
 public interface CategoryRepo extends CrudRepository<Category, Long> {
 
     @Query("SELECT c FROM Category c WHERE c.name LIKE %:name%")
-    Set<Category> findByName(@Param("name") String name);
+    List<Category> findByName(@Param("name") String name);
 
 }
