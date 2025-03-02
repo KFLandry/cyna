@@ -24,9 +24,12 @@ import java.util.Set;
 @RequiredArgsConstructor
 @Slf4j
 public class UserService {
-
+    // Endpoint ouvrert par gateway pour servir les images
     @Value("${static.location}")
     private String staticLocation;
+
+    @Value("${directory.images}")
+    private String imagesPath;
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -59,11 +62,8 @@ public class UserService {
         return "User updated";
     }
 
-    @Value("${directory.images}")
-    private String pathRep;
-
     public String uploadProfile(MultipartFile file) {
-        Path directory = Path.of(pathRep);
+        Path directory = Path.of(imagesPath);
 
         // Créer le répertoire s'il n'existe pas
         if (!Files.exists(directory)) {
@@ -71,7 +71,7 @@ public class UserService {
                 Files.createDirectories(directory);
             } catch (IOException e) {
                 log.error("Erreur lors de la création du répertoire: {}", e.getMessage(), e);
-                throw new RuntimeException("Impossible de créer le répertoire " + pathRep, e);
+                throw new RuntimeException("Impossible de créer le répertoire " + imagesPath, e);
             }
         }
 

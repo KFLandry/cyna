@@ -1,5 +1,6 @@
 package com.cyna.products.controllers;
 
+import com.cyna.products.dto.CategoryDto;
 import com.cyna.products.models.Category;
 import com.cyna.products.services.CategoryService;
 import lombok.AllArgsConstructor;
@@ -32,8 +33,8 @@ public class CategoryController {
         return ResponseEntity.ok(categoryService.getCategoryByName(name));
     }
     @PostMapping
-    public ResponseEntity<String> createCategory(@RequestParam("images") Set<MultipartFile> images, @RequestParam("name") String name) {
-        return ResponseEntity.ok(categoryService.createCategory(images, name));
+    public ResponseEntity<String> createCategory(@ModelAttribute CategoryDto categoryDto) {
+        return ResponseEntity.ok(categoryService.createCategory(categoryDto));
     }
 
     @PutMapping("/{categoryId}")

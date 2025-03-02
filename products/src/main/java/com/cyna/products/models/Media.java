@@ -23,7 +23,7 @@ public class Media {
     private String name;
 
     @Column(nullable = false)
-    private String path;
+    private String url;
 
     @CreationTimestamp
     @Column(nullable = false)

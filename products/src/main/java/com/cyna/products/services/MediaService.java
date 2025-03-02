@@ -17,23 +17,28 @@ import java.util.*;
 @Service
 @Slf4j
 public class MediaService {
+
     @Value("${directory.images}")
-    private String pathRep;
+    private String imagesPath;
+
+    // Endpoint ouvrert par gateway pour servir les images
+    @Value("${static.location}")
+    private String staticLocation;
 
     @Autowired
     private MediaRepo mediaRepo;
 
     public Set<Media> uploadFiles(Set<MultipartFile> files) {
         Set<Media> images = new HashSet<>();
-        Path directory = Path.of(pathRep);
+        Path directory = Path.of(imagesPath);
 
         // Créer le répertoire s'il n'existe pas
         if (!Files.exists(directory)) {
             try {
-                directory = Files.createDirectories(directory);
+                Files.createDirectories(directory);
             } catch (IOException e) {
                 log.error("Erreur lors de la création du répertoire: {}", e.getMessage(), e);
-                throw new RuntimeException("Impossible de créer le répertoire " + pathRep, e);
+                throw new RuntimeException("Impossible de créer le répertoire " + imagesPath, e);
             }
         }
 
@@ -49,7 +54,7 @@ public class MediaService {
                 // Créer l'objet Media
                 Media media = Media.builder()
                         .name(file.getOriginalFilename())
-                        .path(destinationFile.toString().replace("\\","/"))
+                        .url(this.staticLocation +"/"+ file.getOriginalFilename())
                         .build();
 
                 mediaRepo.save(media);
@@ -68,11 +73,12 @@ public class MediaService {
     public void deleteImages(Set<Media> images) {
 
         for (Media media : images) {
-            File file = new File(media.getPath());
+            Path imagePath = Path.of(this.imagesPath+"/"+ media.getName());
+            File file = new File(imagePath.toString());
             if (file.delete()) {
-                log.info("Deleted file {}", media.getPath());
+                log.info("Deleted file {}", imagePath);
             }else{
-                log.error("Error while deleting file {}", media.getPath());
+                log.error("Error while deleting file {}", imagePath);
             }
         }
     }

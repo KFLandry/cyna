@@ -5,13 +5,3 @@ spring:
     import: configserver:http://localhost:8888
   profiles:
     active: local
-
-springdoc:
-  api-docs:
-    path: /api-docs
-  swagger-ui:
-    path: /swagger-ui-custom.html
-    operations-sorter: method
-
-directory:
-  images: ./images/

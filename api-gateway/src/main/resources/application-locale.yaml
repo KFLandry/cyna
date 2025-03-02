@@ -17,33 +17,26 @@ spring:
         - id: user-service
           uri: lb://auth-users
           predicates:
-            - Path=/api/v1/user/**,/api/v1/address/**,/api/v1/card/**,/auth-users/
+            - Path=/api/v1/user/**,/auth-users/**
           filters:
             - name: JwtAuth
 
         - id: products
           uri: lb://products
           predicates:
-            - Path=/api/v1/products/**,/api/v1/categories/**, /products/
+            - Path=/api/v1/products/**,/api/v1/categories/**,/products/**
 
         - id: orders
           uri: lb://orders
           predicates:
-            - Path=/api/v1/orders/**, /orders/
+            - Path=/api/v1/orders/**,/orders/**
           filters:
             - name: JwtAuth
 
         - id: sav
           uri: lb://sav
           predicates:
-            - Path=/api/v1/sav/**, /sav/
-
-        - id: payment
-          uri: lb://payment
-          predicates:
-            - Path=/api/v1/payment/**
-          filters:
-            - name: JwtAuth
+            - Path=/api/v1/sav/**, /sav/**
 
 eureka:
   client:
@@ -54,10 +47,25 @@ eureka:
   instance:
     hostname: localhost
     preferIpAddress: false
+    instance-id: ${spring.application.name}:${random.value}
 logging:
   level:
-    org.springframework.cloud.gateway: INFO
-    org.springframework.cloud.netflix: INFO
+    org.springframework.cloud.gateway: DEBUG
+    org.springframework.cloud.netflix: DEBUG
 
   file:
     name: ./target/api-gateway.log
+
+springdoc:
+  api-docs:
+    path: /aggregated-api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+    urls:
+      - name:  gateway-service
+        url: /aggregated-api-docs
+      - name: auth-users
+        url: /auth-users/api-docs
+      - name: products
+        url: /products/api-docs
