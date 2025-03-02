@@ -2,9 +2,9 @@ spring:
   application:
     name: api-gateway
   config:
-    import: configserver:http://config-server:8888
+    import: configserver:http://localhost:8888
   profiles:
-    active: dev
+    active: local
 logging:
   level:
-    root: info
+    root: debug

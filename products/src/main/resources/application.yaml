@@ -2,6 +2,13 @@ spring:
   application:
     name: products
   config:
-    import: configserver:http://config-server:8888
+    import: configserver:http://localhost:8888
   profiles:
-    active: dev
+    active: local
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui-custom.html
+    operations-sorter: method
