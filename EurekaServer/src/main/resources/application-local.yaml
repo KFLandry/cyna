@@ -1,3 +1,16 @@
-spring:
-  config:
-    import: optional:configserver:http://localhost:8888
+eureka:
+  client:
+    fetch-registry: false
+    register-with-eureka: false
+    service-url:
+      defaultZone: ${EUREKA-URI:http://localhost:${PORT:8761}/eureka}
+
+  instance:
+    hostname: localhost
+    prefer-ip-address: true
+
+logging:
+  level:
+    root: warn
+    com.netflix: OFF
+    com.discovery: OFF

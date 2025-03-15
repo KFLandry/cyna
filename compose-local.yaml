@@ -1,0 +1,66 @@
+services:
+#  config-server:
+#    container_name: 'config-server'
+#    build: ./config-server
+#    ports:
+#      - '8888:8888'
+#
+#  eureka-server:
+#    container_name: 'eureka-server'
+#    build: ./EurekaServer
+#    ports:
+#      - '8761:8761'
+#    depends_on:
+#      - config-server
+#
+#  api-gateway:
+#    container_name: 'api-gateway'
+#    build: ./api-gateway
+#    ports:
+#      - '8080:8080'
+#    depends_on:
+#      - config-server
+#      - eureka-server
+#
+#  auth-users:
+#    container_name: 'auth-users'
+#    build: ./auth-users
+#    privileged: true
+#    depends_on:
+#      - config-server
+#      - eureka-server
+#      - cyna_db
+#
+#  products:
+#    container_name: 'products'
+#    build: ./products
+#    privileged: true
+#    depends_on:
+#      - config-server
+#      - eureka-server
+#      - cyna_db
+
+  cyna_db:
+    container_name: 'cyna_db'
+    image: 'mysql:latest'
+    environment:
+      - 'MYSQL_DATABASE=cyna_db'
+      - 'MYSQL_PASSWORD=cyna_pwd'
+      - 'MYSQL_ROOT_PASSWORD=cyna_pwd'
+      - 'MYSQL_USER=cyna_user'
+    volumes:
+      - db-data:/var/lib/mysql
+    ports:
+      - '3307:3306'
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+#    secrets:
+#      - db-password
+volumes:
+  db-data:
+#secrets:
+#  db-password:
+#    external: true

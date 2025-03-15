@@ -2,15 +2,12 @@ spring :
   application :
     name : config-server
 
-  cloud:
-    config:
-      server:
-        git:
-          uri: https://github.com/KFLandry/config-repo.git
-          skip-ssl-validation: true
+  profiles:
+    active: ${PROFILE:dev}
+
 server:
-  port: 8888
+  port: ${PORT:8888}
 
 logging:
   level:
-    web: debug
+    web: warn
