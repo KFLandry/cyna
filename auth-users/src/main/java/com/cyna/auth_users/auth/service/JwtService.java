@@ -1,5 +1,6 @@
 package com.cyna.auth_users.auth.service;
 
+import com.cyna.auth_users.users.models.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -23,18 +24,22 @@ public class JwtService {
     @Value("${jwt.expiration}")
     private long jwtExpiration;
 
-    public String generateToken(UserDetails userDetails) {
+    public String generateToken(User userDetails) {
         return buildToken(new HashMap<>(), userDetails, jwtExpiration);
     }
 
     private String buildToken(
             Map<String, Object> extraClaims,
-            UserDetails userDetails,
+            User userDetails,
             long expiration
     ) {
+
+
+
         return Jwts
                 .builder()
                 .setClaims(extraClaims)
+                .setId(userDetails.getId().toString())
                 .setSubject(userDetails.getUsername())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + expiration))
