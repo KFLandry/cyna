@@ -6,11 +6,11 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Entity
- @AllArgsConstructor
- @NoArgsConstructor
- @Builder
- @Data
+//@Entity
+// @AllArgsConstructor
+// @NoArgsConstructor
+// @Builder
+// @Data
 public class OrderItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -19,9 +19,9 @@ public class OrderItem {
      @JoinColumn(name = "product_id", nullable = false)
      private Long product;
 
-    @ManyToOne
-    @JoinColumn(name = "orders_id", nullable = false)
-    private Order order;
+//    @ManyToOne
+//    @JoinColumn(name = "orders_id", nullable = false)
+//    private Order order;
 
     @Column(nullable = false)
     private int quantity;
