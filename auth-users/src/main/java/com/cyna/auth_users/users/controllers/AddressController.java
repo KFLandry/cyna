@@ -1,7 +1,6 @@
 package com.cyna.auth_users.users.controllers;
 
 import com.cyna.auth_users.users.dto.AddressDto;
-import com.cyna.auth_users.users.dto.CardDto;
 import com.cyna.auth_users.users.models.Address;
 import com.cyna.auth_users.users.service.AddressService;
 import jakarta.validation.Valid;
@@ -38,7 +37,7 @@ public class AddressController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> delete(@PathVariable Long id) {
+    public ResponseEntity<String> delete(@PathVariable Long id) {
         return ResponseEntity.ok(addressService.delete(id));
     }
 }

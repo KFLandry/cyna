@@ -7,10 +7,7 @@ import com.cyna.auth_users.users.repositories.AddressRepository;
 import com.cyna.auth_users.users.repositories.UserRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Optional;
@@ -30,7 +27,7 @@ public class AddressService {
     }
 
     public String create(@Valid AddressDto addressDto) {
-        User user = userRepository.findById(addressDto.getUser_id()).orElseThrow();
+        User user = userRepository.getByIdOrCustomerId(addressDto.getUserId(), addressDto.getCustomerId());
         Address address = Address.builder()
                 .user(user)
                 .name(addressDto.getName())
@@ -41,6 +38,7 @@ public class AddressService {
                 .build();
 
         addressRepository.save(address);
+
         return "Operation successful";
     }
 

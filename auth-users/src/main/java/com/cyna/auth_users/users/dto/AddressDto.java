@@ -17,7 +17,9 @@ public class AddressDto {
 
     private String country;
 
-    private Long user_id;
+    private Long userId;
+
+    private String customerId;
 
     private String url;
 }

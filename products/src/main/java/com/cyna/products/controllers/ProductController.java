@@ -46,7 +46,7 @@ public class ProductController {
 
     @PatchMapping("/{productId}/images")
     public ResponseEntity<String> addImages(@PathVariable long productId, @RequestParam("images") Set<MultipartFile> images) {
-        return ResponseEntity.ok(productService.AddImages(productId, images));
+        return ResponseEntity.ok(productService.addImages(productId, images));
     }
 
     @DeleteMapping("/{productId}/images")

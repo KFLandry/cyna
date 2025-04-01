@@ -9,7 +9,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 @Data
 public class UserDto {
-
+    private String customerId;
     private String firstname;
     private String lastname;
 
@@ -20,7 +20,6 @@ public class UserDto {
     private Long phone;
 
     private String role;
-
     @Pattern(
             regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!]).{8,}$",
             message = "Le mot de passe doit contenir au moins 8 caractères, une majuscule, une minuscule, un chiffre et un caractère spécial"

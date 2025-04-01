@@ -32,7 +32,12 @@ public class UserController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<?> update(@PathVariable Long id ,@Valid @ModelAttribute UserDto userDto) {
+    public ResponseEntity<String> update(@PathVariable Long id ,@Valid @RequestBody UserDto userDto) {
+        return ResponseEntity.ok(userService.update(id ,userDto));
+    }
+
+    @PatchMapping("/{id}/profiles")
+    public ResponseEntity<String> uploadProfile(@PathVariable Long id ,@Valid @ModelAttribute UserDto userDto) {
         return ResponseEntity.ok(userService.update(id ,userDto));
     }
 

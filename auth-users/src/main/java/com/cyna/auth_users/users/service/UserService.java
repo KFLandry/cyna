@@ -47,6 +47,7 @@ public class UserService {
 
         User updateUser =  User.builder()
                 .id(user.getId())
+                .customerId(Optional.ofNullable(userDto.getCustomerId()).orElse(user.getCustomerId()))
                 .firstname(Optional.ofNullable(userDto.getFirstname()).orElse(user.getFirstname()))
                 .lastname(Optional.ofNullable(userDto.getLastname()).orElse(user.getLastname()))
                 .email(Optional.ofNullable(userDto.getEmail()).orElse(user.getEmail()))
@@ -105,7 +106,6 @@ public class UserService {
     }
 
     public List<User> getByName(String name) {
-//        return userRepository.findByfirstnameOrlastname(name, name);*
-        return null;
+        return userRepository.getByFirstnameAndLastname(name, name);
     }
 }
