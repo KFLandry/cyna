@@ -1,5 +1,6 @@
 package com.cyna.products.services;
 
+import com.cyna.products.dto.PriceDto;
 import com.cyna.products.dto.ProductDto;
 import com.cyna.products.models.Category;
 import com.cyna.products.models.Media;
@@ -7,26 +8,36 @@ import com.cyna.products.models.Product;
 import com.cyna.products.repositories.ProductRepo;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.BadRequestException;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.cloud.client.ServiceInstance;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClient;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+
+import java.net.URI;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class ProductService {
 
-    private ProductRepo productRepo;
-    private MediaService mediaService;
-    private CategoryService categoryService;
+    private static final String SUBCRIPTIONS_ID = "subscriptions" ;
+    private final ProductRepo productRepo;
+    private final MediaService mediaService;
+    private final CategoryService categoryService;
+    private final DiscoveryClient discoveryClient;
+    private final RestClient.Builder restClientBuilder;
 
-    public String AddImages(long productId, Set<MultipartFile> images) {
+    public String addImages(long productId, Set<MultipartFile> images) {
 
         Product product = productRepo.findById(productId).orElseThrow();
         Set<Media> medias = mediaService.uploadFiles(images);
@@ -71,11 +82,19 @@ public class ProductService {
                 .caracteristics(productDto.getCaracteristics())
                 .brand(productDto.getBrand())
                 .pricingModel(productDto.getPricingModel())
-                .price(productDto.getPrice())
+                .amount(productDto.getAmount())
                 .status(productDto.getStatus())
                 .images(images)
                 .build();
 
+        // On save pour avoir l'id du produit
+        product = productRepo.save(product);
+
+        // On crée le produit dans Stripe
+        PriceDto priceDto = this.createStripePrice(product);
+
+        // On ajoute le priceId de stripe au produit
+        product.setPriceId(priceDto.getPriceId());
         productRepo.save(product);
 
         return "Operation successful";
@@ -110,7 +129,7 @@ public class ProductService {
                 .category(productdto.getCategoryId() != product.getCategory().getId() ?
                         categoryService.getCategoryById(productdto.getCategoryId()) :
                         product.getCategory())
-                .price(Optional.of(productdto.getPrice()).orElse(product.getPrice()))
+                .amount(Optional.of(productdto.getAmount()).orElse(product.getAmount()))
                 .build();
 
         productRepo.save(updatedProduct);
@@ -121,7 +140,58 @@ public class ProductService {
     public String deleteProduct(long id) {
         productRepo.deleteById(id);
 
+        // On supprime le produit de Stripe
+        this.deleteStripePrice(id);
+
         return "Operation successful";
     }
 
+    public PriceDto createStripePrice(Product product){
+        try {
+            PriceDto priceDto = PriceDto.builder()
+                    .currency("eur")
+                    .productId(product.getId())
+                    .productName(product.getName())
+                    .amount(product.getAmount())
+                    .description(product.getDescription())
+                    .build();
+
+            PriceDto result = restClientBuilder.build()
+                    .post()
+                    .uri(this.getServiceURI(SUBCRIPTIONS_ID) + "/api/v1/subscriptions/create-price")
+                    .body(priceDto)
+                    .retrieve()
+                    .body(PriceDto.class);
+
+            log.debug("[ProductsService][CreateStripePrice] Create a stripe products. Result: {}", result);
+            return result;
+        } catch (Exception e) {
+            log.error("[StripeService][updateCustomerId] Error while updating customerId", e);
+            throw new RuntimeException();
+        }
+    }
+
+    public void deleteStripePrice(long productId){
+        try {
+            restClientBuilder.build()
+                    .delete()
+                    .uri(this.getServiceURI(SUBCRIPTIONS_ID) + "/api/v1/subscriptions/create-price/"+productId);
+
+        } catch (Exception e) {
+            log.error("[StripeService][updateCustomerId] Error while updating customerId", e);
+        }
+    }
+
+    public URI getServiceURI(String serviceId){
+        List<ServiceInstance> instances = discoveryClient.getInstances(serviceId);
+        if (instances.isEmpty()) {
+            log.error("No instances found for service: {}", serviceId);
+            throw new RuntimeException("Auth-users service not available");
+        }
+
+        ServiceInstance serviceInstance = instances.getFirst();
+        log.debug("Calling auth service at: {}", serviceInstance.getUri());
+
+        return serviceInstance.getUri();
+    }
 }

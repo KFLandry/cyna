@@ -7,7 +7,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -22,6 +21,8 @@ public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    private String priceId;
 
     @Column(nullable = false)
     private String name;
@@ -40,7 +41,7 @@ public class Product {
     private PricingModel pricingModel;
 
     @Column(nullable = false)
-    private int price;
+    private Long amount;
 
     @ManyToOne
     @JoinColumn(nullable = false, name = "category_id")

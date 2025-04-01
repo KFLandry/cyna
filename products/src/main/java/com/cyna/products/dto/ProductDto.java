@@ -13,6 +13,8 @@ import java.util.Set;
 public class ProductDto {
     private long id;
 
+    private String priceId;
+
     private String name;
 
     private String brand;
@@ -23,7 +25,7 @@ public class ProductDto {
 
     private PricingModel pricingModel;
 
-    private int price;
+    private long amount;
 
     private long categoryId;
 
