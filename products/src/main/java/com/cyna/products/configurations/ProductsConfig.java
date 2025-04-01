@@ -1,4 +1,4 @@
-package com.api_gateway.configs;
+package com.cyna.products.configurations;
 
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.context.annotation.Bean;
@@ -9,8 +9,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 @EnableDiscoveryClient
-public class SecurityConfig {
-
+public class ProductsConfig {
     @Bean
     public RestClient.Builder restClientBuilder() {
         return RestClient.builder();
@@ -26,5 +25,4 @@ public class SecurityConfig {
             }
         };
     }
-
 }
