@@ -5,6 +5,8 @@ import lombok.Data;
 
 @Data
 public class PriceDto {
+    private String priceId;
+
     @SerializedName("currency")
     String currency;
 
@@ -16,4 +18,7 @@ public class PriceDto {
 
     @SerializedName("ProductName")
     String productName;
+
+    @SerializedName("description")
+    private String description;
 }

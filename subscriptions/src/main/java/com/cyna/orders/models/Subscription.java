@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.UuidGenerator;
 
 import java.util.List;
 
@@ -23,7 +24,7 @@ public class Subscription {
     private String subscriptionId;
 
     @JoinColumn(name = "customer_id", nullable = false)
-    private Long customerId;
+    private String customerId;
 
     @JoinColumn(name = "productId", nullable = false)
     private Long productId;
@@ -36,7 +37,7 @@ public class Subscription {
     private SubscriptionListParams.Status status;
 
     @Column(nullable = false, name = "quantity")
-    private Integer quantity;
+    private Long quantity;
 
     @Column(nullable = false)
     private double amount;

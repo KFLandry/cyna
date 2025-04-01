@@ -7,6 +7,5 @@ import lombok.Data;
 public class SubscriptionDto {
     private String priceId;
     private String customerId;
-    @Nullable
-    private String quantity;
+    private long quantity;
 }

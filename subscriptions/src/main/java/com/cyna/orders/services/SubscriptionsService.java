@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 
-// TODO : A tester
 @Service
 @Transactional
 @Log4j2
@@ -22,8 +21,8 @@ public class SubscriptionsService {
         return subscriptionRepo.save(subscription);
     }
 
-    public void delete(Subscription subscription) {
-        subscriptionRepo.delete(subscription);
+    public void delete(String subscriptionId) {
+        subscriptionRepo.deleteBySubscriptionId(subscriptionId);
     }
 
     public List<Subscription> findAll() {
@@ -38,7 +37,10 @@ public class SubscriptionsService {
         return subscriptionRepo.findById(id).orElse(null);
     }
 
-    public void update(Subscription subscription) {
+    public Subscription update(Subscription subscription) {
+
+        // TODO : Implementer une logique de validation coté client avec de modifier la subscription.
+
         Subscription initialSubscription = subscriptionRepo.findById(subscription.getId()).orElseThrow();
 
         Subscription updatedSubscription =  Subscription.builder()
@@ -48,7 +50,7 @@ public class SubscriptionsService {
                 .paymentMethod(Optional.ofNullable(subscription.getPaymentMethod()).orElse(initialSubscription.getPaymentMethod()))
                 .build();
 
-        subscriptionRepo.save(updatedSubscription);
+        return subscriptionRepo.save(updatedSubscription);
     }
 
 }
