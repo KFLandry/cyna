@@ -21,6 +21,8 @@ services:
     depends_on:
       - config-server
       - eureka-server
+    environment:
+      - URL-CONFIG-SERVER=http://config-server:8888
 
   auth-users:
     container_name: 'auth-users'
@@ -33,6 +35,13 @@ services:
   products:
     container_name: 'products'
     build: ./products
+    ports:
+      - '8082:8082'
+    volumes:
+      - ./products/images:/home/images
+    environment:
+      - directory.images=/home/images
+      - static.location=/images
     depends_on:
       - config-server
       - eureka-server
