@@ -52,16 +52,16 @@ springdoc:
     operations-sorter: method
 
 stripe:
-  STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY:pk_test_51R52tHLOr2ayTtuhxAHQIQM3foUsQMKBVp9Hz5sGCwSvOpadPNrvkIfIDWyui6KryISn89Y6s5GeNXdjArtlFwKQ00tDPdmYOU}
-  STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:sk_test_51R52tHLOr2ayTtuhM5YHHxQ308ZyMhbBccVDEigLpz7MFXQK3bvUR9nZVlv1fdGcOQ0WTK9kPUMQ1LxrnXTNLVDp000f5Za6sz}
-  STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:whsec_7df9cac958c8fbdaa1686e904537a8e2df88320315e0cb25333aea56a79bf96c}
+  STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY}
+  STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
+  STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
   STATIC_DIR: "../client"
   return_url: ${RETURN_URL:http://localhost:1234}
 
 mailerSend:
   from: ${MAIL_USERNAME:wilfried@trial-ywj2lpnqzo1g7oqz.mlsender.net}
   support_email: ${MAIL_USERNAME:wilfried@trial-ywj2lpnqzo1g7oqz.mlsender.net}
-  token: ${API_TOKEN:mlsn.d9038881333ff79e651de384e23449400c2ef9e55a9195efeb16a7bc027d1286}
+  token: ${API_TOKEN}
   templates:
     generic_template:  "3z0vklo86e147qrx"
     generic_template_with_button: "jpzkmgq87o2g059v"
