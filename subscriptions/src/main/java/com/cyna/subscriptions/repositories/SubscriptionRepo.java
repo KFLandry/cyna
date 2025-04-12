@@ -1,6 +1,6 @@
-package com.cyna.orders.repositories;
+package com.cyna.subscriptions.repositories;
 
-import com.cyna.orders.models.Subscription;
+import com.cyna.subscriptions.models.Subscription;
 import org.hibernate.annotations.SQLDelete;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;

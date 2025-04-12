@@ -1,4 +1,4 @@
-package com.cyna.orders.dto;
+package com.cyna.subscriptions.dto;
 
 import com.google.gson.annotations.SerializedName;
 import lombok.Data;

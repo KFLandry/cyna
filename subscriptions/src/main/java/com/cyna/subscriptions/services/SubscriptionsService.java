@@ -1,7 +1,7 @@
-package com.cyna.orders.services;
+package com.cyna.subscriptions.services;
 
-import com.cyna.orders.models.Subscription;
-import com.cyna.orders.repositories.SubscriptionRepo;
+import com.cyna.subscriptions.models.Subscription;
+import com.cyna.subscriptions.repositories.SubscriptionRepo;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;

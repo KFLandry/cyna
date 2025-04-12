@@ -1,4 +1,4 @@
-package com.cyna.orders.services;
+package com.cyna.subscriptions.services;
 
 import com.mailersend.sdk.MailerSend;
 import com.mailersend.sdk.Recipient;
@@ -8,7 +8,6 @@ import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.method.annotation.HandlerMethodValidationException;
 
 import java.util.HashMap;
 import java.util.Map;

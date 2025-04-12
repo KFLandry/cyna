@@ -1,4 +1,4 @@
-package com.cyna.orders.models;
+package com.cyna.subscriptions.models;
 
 import com.stripe.param.SubscriptionListParams;
 import jakarta.persistence.*;
@@ -6,9 +6,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.UuidGenerator;
-
-import java.util.List;
 
 @Entity
 @AllArgsConstructor
