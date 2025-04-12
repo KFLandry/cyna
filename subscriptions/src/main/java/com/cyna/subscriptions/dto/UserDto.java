@@ -1,4 +1,4 @@
-package com.cyna.orders.dto;
+package com.cyna.subscriptions.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Pattern;

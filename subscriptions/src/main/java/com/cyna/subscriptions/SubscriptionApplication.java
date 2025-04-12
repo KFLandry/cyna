@@ -1,13 +1,13 @@
-package com.cyna.orders;
+package com.cyna.subscriptions;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class OrderApplication {
+public class SubscriptionApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(OrderApplication.class, args);
+        SpringApplication.run(SubscriptionApplication.class, args);
     }
 
 }

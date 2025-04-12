@@ -1,4 +1,4 @@
-package com.cyna.orders.dto;
+package com.cyna.subscriptions.dto;
 
 import lombok.Data;
 

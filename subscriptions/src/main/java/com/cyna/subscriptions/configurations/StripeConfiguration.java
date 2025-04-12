@@ -1,4 +1,4 @@
-package com.cyna.orders.configurations;
+package com.cyna.subscriptions.configurations;
 
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.context.annotation.Bean;

@@ -1,6 +1,5 @@
-package com.cyna.orders.dto;
+package com.cyna.subscriptions.dto;
 
-import jakarta.annotation.Nullable;
 import lombok.Data;
 
 @Data

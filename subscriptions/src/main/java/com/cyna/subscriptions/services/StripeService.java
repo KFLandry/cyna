@@ -1,6 +1,6 @@
-package com.cyna.orders.services;
+package com.cyna.subscriptions.services;
 
-import com.cyna.orders.dto.*;
+import com.cyna.subscriptions.dto.*;
 import com.google.gson.JsonSyntaxException;
 import com.stripe.param.*;
 import jakarta.servlet.http.HttpServletRequest;
@@ -269,7 +269,7 @@ public class StripeService {
         if (paymentMethod == null) {
             throw new NullPointerException("PaymentMethod is null in payment_method.updated event");
         }
-        com.cyna.orders.models.Subscription updatedSubscription = com.cyna.orders.models.Subscription.builder()
+        com.cyna.subscriptions.models.Subscription updatedSubscription = com.cyna.subscriptions.models.Subscription.builder()
                 .customerId(paymentMethod.getCustomer())
                 .paymentMethod(paymentMethod.getType())
                 .build();
@@ -282,7 +282,7 @@ public class StripeService {
         if (subscription == null) {
             throw new NullPointerException("Subscription is null in customer.subscription.created event");
         }
-        com.cyna.orders.models.Subscription newSubscription = com.cyna.orders.models.Subscription.builder()
+        com.cyna.subscriptions.models.Subscription newSubscription = com.cyna.subscriptions.models.Subscription.builder()
                 .subscriptionId(subscription.getId())
                 .customerId(subscription.getCustomer())
                 .productId(Long.valueOf(subscription.getItems().getData().getFirst().getPrice().getProduct()))
@@ -298,7 +298,7 @@ public class StripeService {
         if (subscription == null) {
             throw new NullPointerException("Subscription is null in subscription update event");
         }
-        com.cyna.orders.models.Subscription updatedSubscription = com.cyna.orders.models.Subscription.builder()
+        com.cyna.subscriptions.models.Subscription updatedSubscription = com.cyna.subscriptions.models.Subscription.builder()
                 .status(SubscriptionListParams.Status.valueOf(subscription.getStatus()))
                 .amount(subscription.getBillingCycleAnchor())
                 .quantity(subscription.getItems().getData().getFirst().getQuantity())
@@ -312,7 +312,7 @@ public class StripeService {
         if (subscription == null) {
             throw new NullPointerException("Subscription is null in setup_intent.succeeded event");
         }
-        com.cyna.orders.models.Subscription updatedSubscription = com.cyna.orders.models.Subscription.builder()
+        com.cyna.subscriptions.models.Subscription updatedSubscription = com.cyna.subscriptions.models.Subscription.builder()
                 .paymentMethod(subscription.getDefaultPaymentMethod())
                 .build();
         subscriptionService.update(updatedSubscription);
@@ -370,6 +370,38 @@ public class StripeService {
         if (attributes != null) {
             HttpServletRequest currentRequest = attributes.getRequest();
             return currentRequest.getHeader(HttpHeaders.AUTHORIZATION);
+        }
+        return null;
+    }
+
+    public String addPaymentMethod(PaymentMethodDto paymentMethodDto) {
+        PaymentMethodCreateParams params = PaymentMethodCreateParams.builder()
+                .setType(PaymentMethodCreateParams.Type.valueOf(paymentMethodDto.getType()))
+                .setCard(
+                        PaymentMethodCreateParams.CardDetails.builder()
+                                .setNumber(String.valueOf(paymentMethodDto.getNumber()))
+                                .setExpMonth(paymentMethodDto.getMonth())
+                                .setExpYear(paymentMethodDto.getYear())
+                                .setCvc(String.valueOf(paymentMethodDto.getCvc()))
+                                .build()
+                )
+                .build();
+        try {
+            PaymentMethod paymentMethod = PaymentMethod.create(params);
+            // Mettre à jour le client pour définir cette PaymentMethod par défaut pour la facturation
+            CustomerUpdateParams.InvoiceSettings invoiceSettings = CustomerUpdateParams.InvoiceSettings.builder()
+                    .setDefaultPaymentMethod(paymentMethod.getId())
+                    .build();
+
+            CustomerUpdateParams updateParams = CustomerUpdateParams.builder()
+                    .setInvoiceSettings(invoiceSettings)
+                    .build();
+
+            Customer customer = Customer.retrieve(paymentMethodDto.getCustomerId());
+            customer.update(updateParams);
+
+        } catch (StripeException e) {
+            throw new ResponseStatusException(HttpStatusCode.valueOf(400), e.getStripeError().getMessage());
         }
         return null;
     }

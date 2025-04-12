@@ -1,11 +1,12 @@
-package com.cyna.orders.controllers;
+package com.cyna.subscriptions.controllers;
 
-import com.cyna.orders.dto.CustomerDto;
-import com.cyna.orders.dto.PriceDto;
-import com.cyna.orders.dto.SubscriptionDto;
-import com.cyna.orders.models.Subscription;
-import com.cyna.orders.services.StripeService;
-import com.cyna.orders.services.SubscriptionsService;
+import com.cyna.subscriptions.dto.CustomerDto;
+import com.cyna.subscriptions.dto.PaymentMethodDto;
+import com.cyna.subscriptions.dto.PriceDto;
+import com.cyna.subscriptions.dto.SubscriptionDto;
+import com.cyna.subscriptions.models.Subscription;
+import com.cyna.subscriptions.services.StripeService;
+import com.cyna.subscriptions.services.SubscriptionsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -36,6 +37,11 @@ public class StripeController {
     @PostMapping("/create-customer")
     public ResponseEntity<String> createCustomer(@RequestBody CustomerDto customerDto) {
         return ResponseEntity.ok(stripeService.createCustomer(customerDto));
+    }
+
+    @PostMapping
+    public ResponseEntity<String> addPaymentMethod(@RequestBody PaymentMethodDto paymentMethodDto) {
+        return ResponseEntity.ok(stripeService.addPaymentMethod(paymentMethodDto));
     }
 
     @PostMapping("/create-price")
