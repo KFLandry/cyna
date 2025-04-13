@@ -15,11 +15,6 @@ spring:
         format_sql: true
     defer-datasource-initialization: true
 
-#  config:
-#    import: configserver:${URL-CONFIG-SERVER:http://localhost:8888}
-#  profiles:
-#    active: ${PROFILE:local}
-
   docker:
     compose:
       file: compose.yaml
@@ -60,7 +55,7 @@ stripe:
 
 mailerSend:
   from: ${MAIL_USERNAME:wilfried@trial-ywj2lpnqzo1g7oqz.mlsender.net}
-  support_email: ${MAIL_USERNAME:wilfried@trial-ywj2lpnqzo1g7oqz.mlsender.net}
+  support_email: ${SUPPORT_MAIL:wilfried@trial-ywj2lpnqzo1g7oqz.mlsender.net}
   token: ${API_TOKEN}
   templates:
     generic_template:  "3z0vklo86e147qrx"
