@@ -2,7 +2,7 @@ spring:
   application:
     name: subscriptions
   profiles:
-    active: ${PROFILE:dev}
+    active: ${PROFILE:local}
 
 
 

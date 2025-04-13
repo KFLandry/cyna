@@ -375,6 +375,7 @@ public class StripeService {
     }
 
     public String addPaymentMethod(PaymentMethodDto paymentMethodDto) {
+
         PaymentMethodCreateParams params = PaymentMethodCreateParams.builder()
                 .setType(PaymentMethodCreateParams.Type.valueOf(paymentMethodDto.getType()))
                 .setCard(
@@ -401,6 +402,7 @@ public class StripeService {
             customer.update(updateParams);
 
         } catch (StripeException e) {
+            log.error("[StripeService][addMethodPayment] Error while adding a payment method to customerID : {}", paymentMethodDto.getCustomerId(), e);
             throw new ResponseStatusException(HttpStatusCode.valueOf(400), e.getStripeError().getMessage());
         }
         return null;
