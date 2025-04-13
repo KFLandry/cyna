@@ -91,21 +91,31 @@ public class UserService {
     }
 
     public String delete(Long id) {
-        User user = userRepository.getReferenceById(id);
-        Path profilePath = Path.of(user.getUrlProfile());
-        if (Files.exists(profilePath)) {
-            try {
-                Files.delete(profilePath);
-            } catch (IOException e) {
-                log.error("Erreur lors de la suppression de l'image {}", profilePath, e);
-                throw new RuntimeException(e);
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
+
+        String url = user.getUrlProfile();
+        if (url != null) {
+            String filename = Path.of(url).getFileName().toString();
+            Path profilePath = Path.of(imagesPath, filename);
+
+            if (Files.exists(profilePath)) {
+                try {
+                    Files.delete(profilePath);
+                } catch (IOException e) {
+                    log.error("Erreur lors de la suppression de l'image {}", profilePath, e);
+                    throw new RuntimeException("Erreur lors de la suppression de l'image", e);
+                }
             }
         }
+
         userRepository.delete(user);
         return "User deleted";
     }
 
+
     public List<User> getByName(String name) {
-        return userRepository.getByFirstnameAndLastname(name, name);
+        return userRepository.findByFirstnameContainingIgnoreCaseOrLastnameContainingIgnoreCase(name, name);
     }
+
 }

@@ -1,0 +1,69 @@
+spring:
+  application:
+    name: subscriptions
+  datasource:
+    url: jdbc:${JAWSDB_URL:mysql://cyna_db:3306/cyna_db}
+    username: ${DB-USERNAME:cyna_user}
+    password: ${DB-PASSWORD:cyna_pwd}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+    defer-datasource-initialization: true
+
+#  config:
+#    import: configserver:${URL-CONFIG-SERVER:http://localhost:8888}
+#  profiles:
+#    active: ${PROFILE:local}
+
+  docker:
+    compose:
+      file: compose.yaml
+server:
+  port: ${PORT:8083}
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: ${EUREKA-URI:http://eureka-server:8761/eureka/}
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    hostname: ${HOST-AUTH-USERS:${spring.application.name}}
+    instance-id: ${spring.application.name}:${random.value}
+    preferIpAddress: false
+
+logging:
+  level:
+    root: info
+    web: debug
+  file:
+    name: ./target/cyna-orders.log
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+
+stripe:
+  STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY}
+  STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
+  STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
+  STATIC_DIR: "../client"
+  return_url: ${RETURN_URL:http://localhost:1234}
+
+mailerSend:
+  from: ${MAIL_USERNAME:wilfried@trial-ywj2lpnqzo1g7oqz.mlsender.net}
+  support_email: ${MAIL_USERNAME:wilfried@trial-ywj2lpnqzo1g7oqz.mlsender.net}
+  token: ${API_TOKEN}
+  templates:
+    generic_template:  "3z0vklo86e147qrx"
+    generic_template_with_button: "jpzkmgq87o2g059v"
+    email_verified: "jy7zpl998erl5vx6"
+
