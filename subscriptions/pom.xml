@@ -17,8 +17,8 @@
     <groupId>com.cyna.subscriptions</groupId>
     <artifactId>subscriptions</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>orders</name>
-    <description>orders</description>
+    <name>subscriptions</name>
+    <description>subscriptions</description>
     <url/>
     <licenses>
         <license/>
@@ -52,7 +52,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
-
         <dependency>
             <groupId>com.mysql</groupId>
             <artifactId>mysql-connector-j</artifactId>
@@ -138,5 +137,4 @@
             </plugin>
         </plugins>
     </build>
-
 </project>

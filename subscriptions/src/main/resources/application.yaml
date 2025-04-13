@@ -1,8 +1,10 @@
 spring:
   application:
     name: subscriptions
+  config:
+    import: configserver:${URL-CONFIG-SERVER:http://localhost:8888}
   profiles:
-    active: ${PROFILE:dev}
+    active: ${PROFILE:local}
 
 
 

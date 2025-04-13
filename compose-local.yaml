@@ -1,44 +1,66 @@
 services:
-#  config-server:
-#    container_name: 'config-server'
-#    build: ./config-server
-#    ports:
-#      - '8888:8888'
-#
-#  eureka-server:
-#    container_name: 'eureka-server'
-#    build: ./EurekaServer
-#    ports:
-#      - '8761:8761'
-#    depends_on:
-#      - config-server
-#
-#  api-gateway:
-#    container_name: 'api-gateway'
-#    build: ./api-gateway
-#    ports:
-#      - '8080:8080'
-#    depends_on:
-#      - config-server
-#      - eureka-server
-#
-#  auth-users:
-#    container_name: 'auth-users'
-#    build: ./auth-users
-#    privileged: true
-#    depends_on:
-#      - config-server
-#      - eureka-server
-#      - cyna_db
-#
-#  products:
-#    container_name: 'products'
-#    build: ./products
-#    privileged: true
-#    depends_on:
-#      - config-server
-#      - eureka-server
-#      - cyna_db
+  config-server:
+    container_name: 'config-server'
+    build: ./config-server
+    ports:
+      - '8888:8888'
+
+  eureka-server:
+    container_name: 'eureka-server'
+    build: ./EurekaServer
+    ports:
+      - '8761:8761'
+    depends_on:
+      - config-server
+
+  api-gateway:
+    container_name: 'api-gateway'
+    build: ./api-gateway
+    ports:
+      - '8080:8080'
+    depends_on:
+      - config-server
+      - eureka-server
+    environment:
+      - URL-CONFIG-SERVER=http://config-server:8888
+
+  auth-users:
+    container_name: 'auth-users'
+    build: ./auth-users
+    depends_on:
+      - config-server
+      - eureka-server
+      - cyna_db
+
+  products:
+    container_name: 'products'
+    build: ./products
+    ports:
+      - '8082:8082'
+    volumes:
+      - ./products/images:/home/images
+    environment:
+      - directory.images=/home/images
+      - static.location=/images
+    depends_on:
+      - config-server
+      - eureka-server
+      - cyna_db
+
+  subscriptions:
+    container_name: 'subscriptions'
+    build: ./subscriptions
+    ports:
+      - '8083:8083'
+    volumes:
+      - ./subscriptions/images:/home/images
+    environment:
+      - directory.images=/home/images
+      - static.location=/images
+    depends_on:
+      - config-server
+      - eureka-server
+      - cyna_db
 
   cyna_db:
     container_name: 'cyna_db'
