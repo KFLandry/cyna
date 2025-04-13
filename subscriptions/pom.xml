@@ -17,8 +17,8 @@
     <groupId>com.cyna.subscriptions</groupId>
     <artifactId>subscriptions</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>orders</name>
-    <description>orders</description>
+    <name>subscriptions</name>
+    <description>subscriptions</description>
     <url/>
     <licenses>
         <license/>

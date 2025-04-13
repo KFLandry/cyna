@@ -1,0 +1,22 @@
+spring:
+  application:
+    name: notifications
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:wilfrieddev0@gmail.com}
+    password: ${MAIL_PWD:"yajw qcha zmic ovmu"}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls.enable: true
+
+server:
+  port: ${PORT:8085}
+logging:
+  level:
+    root: debug
+
+mailerSend:
+  token: ${API_TOKEN:mlsn.d9038881333ff79e651de384e23449400c2ef9e55a9195efeb16a7bc027d1286}
