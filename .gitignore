@@ -4,6 +4,7 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 !**/resources/.env
+subscriptions/src/main/resources/.env
 
 ### STS ###
 .apt_generated
