@@ -1,7 +1,7 @@
 package com.cyna.auth_users.users.controllers;
 
+import com.cyna.auth_users.users.dto.UpdateUserDto;
 import com.cyna.auth_users.users.dto.UserDto;
-import com.cyna.auth_users.users.models.User;
 import com.cyna.auth_users.users.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -17,27 +17,27 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping
-    public ResponseEntity<List<User>> getAll() {
+    public ResponseEntity<List<UserDto>> getAll() {
         return ResponseEntity.ok(userService.getAll());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<User> getById(@PathVariable long id) {
+    public ResponseEntity<UserDto> getById(@PathVariable long id) {
         return ResponseEntity.ok(userService.getById(id));
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<User>> search(@RequestParam String name) {
+    public ResponseEntity<List<UserDto>> search(@RequestParam String name) {
         return ResponseEntity.ok(userService.getByName(name));
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<String> update(@PathVariable Long id ,@Valid @RequestBody UserDto userDto) {
+    public ResponseEntity<String> update(@PathVariable Long id ,@Valid @RequestBody UpdateUserDto userDto) {
         return ResponseEntity.ok(userService.update(id ,userDto));
     }
 
     @PatchMapping("/{id}/profiles")
-    public ResponseEntity<String> uploadProfile(@PathVariable Long id ,@Valid @ModelAttribute UserDto userDto) {
+    public ResponseEntity<String> uploadProfile(@PathVariable Long id , @Valid @ModelAttribute UpdateUserDto userDto) {
         return ResponseEntity.ok(userService.update(id ,userDto));
     }
 

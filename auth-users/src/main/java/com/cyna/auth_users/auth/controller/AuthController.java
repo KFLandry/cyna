@@ -2,7 +2,6 @@ package com.cyna.auth_users.auth.controller;
 
 import com.cyna.auth_users.auth.dto.*;
 import com.cyna.auth_users.auth.service.AuthService;
-import com.cyna.auth_users.users.dto.UserDto;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -21,12 +20,27 @@ public class AuthController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<?> signup(@Valid @RequestBody CreateUserDto userDto) {
+    public ResponseEntity<Object> signup(@Valid @RequestBody CreateUserDto userDto) {
         return ResponseEntity.ok(authService.register(userDto));
     }
 
     @PostMapping("/validate")
     public  ResponseEntity<ValidationResult> validate(@Valid @RequestBody TokenValidationRequest request) {
         return ResponseEntity.ok(authService.validate(request.getToken()));
+    }
+
+    @GetMapping("/verify-email")
+    public ResponseEntity<String> verifyEmail(@RequestParam String email) {
+        return ResponseEntity.ok(authService.verifyEmail(email));
+    }
+
+    @GetMapping("/validate-email")
+    public ResponseEntity<String> validateEmail(@RequestParam String email) {
+        return ResponseEntity.ok(authService.validateEmail(email));
+    }
+
+    @GetMapping("/validate-account")
+    public ResponseEntity<String> validateAccount(@RequestParam String email) {
+        return ResponseEntity.ok(authService.validateAccount(email));
     }
 }
