@@ -16,4 +16,7 @@ public interface CategoryRepo extends CrudRepository<Category, Long> {
     @Query("SELECT c FROM Category c WHERE c.name LIKE %:name%")
     List<Category> findByName(@Param("name") String name);
 
+    @Query("SELECT DISTINCT c FROM Category c LEFT JOIN FETCH c.products")
+    List<Category> findAllWithProducts();
+
 }

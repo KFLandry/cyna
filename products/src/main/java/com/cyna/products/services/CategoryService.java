@@ -29,6 +29,7 @@ public class CategoryService {
         Set<Media> medias = mediaService.uploadFiles(categoryDto.getImages());
         Category category =  Category.builder()
                 .name(categoryDto.getName())
+                .description(categoryDto.getDescription())
                 .images(medias)
                 .build();
         categoryRepo.save(category);
@@ -36,8 +37,16 @@ public class CategoryService {
     }
 
     public List<Category> getCategories() {
-        return (List<Category>) categoryRepo.findAll();
+        List<Category> categories = categoryRepo.findAllWithProducts();
+
+        for (Category category : categories) {
+            category.getProducts().size();
+        }
+
+        return categories;
     }
+
+
 
     public Category getCategoryById(Long id) {
         return categoryRepo.findById(id).orElseThrow();

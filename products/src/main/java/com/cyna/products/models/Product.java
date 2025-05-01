@@ -1,5 +1,6 @@
 package com.cyna.products.models;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -45,7 +46,7 @@ public class Product {
 
     @ManyToOne
     @JoinColumn(nullable = false, name = "category_id")
-    @JsonIgnore
+    @JsonBackReference
     private Category category;
 
     @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
