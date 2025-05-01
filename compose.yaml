@@ -1,66 +1,70 @@
 services:
-#  config-server:
-#    container_name: 'config-server'
-#    build: ./config-server
-#    ports:
-#      - '8888:8888'
-#
-#  eureka-server:
-#    container_name: 'eureka-server'
-#    build: ./EurekaServer
-#    ports:
-#      - '8761:8761'
-#    depends_on:
-#      - config-server
-#
-#  api-gateway:
-#    container_name: 'api-gateway'
-#    build: ./api-gateway
-#    ports:
-#      - '8080:8080'
-#    depends_on:
-#      - config-server
-#      - eureka-server
-#    environment:
-#      - URL-CONFIG-SERVER=http://config-server:8888
-#
-#  auth-users:
-#    container_name: 'auth-users'
-#    build: ./auth-users
-#    depends_on:
-#      - config-server
-#      - eureka-server
-#      - cyna_db
-#
-#  products:
-#    container_name: 'products'
-#    build: ./products
-#    ports:
-#      - '8082:8082'
-#    volumes:
-#      - ./products/images:/home/images
-#    environment:
-#      - directory.images=/home/images
-#      - static.location=/images
-#    depends_on:
-#      - config-server
-#      - eureka-server
-#      - cyna_db
-#
-#  subscriptions:
-#    container_name: 'subscriptions'
-#    build: ./subscriptions
-#    ports:
-#      - '8083:8083'
-#    volumes:
-#      - ./subscriptions/images:/home/images
-#    environment:
-#      - directory.images=/home/images
-#      - static.location=/images
-#    depends_on:
-#      - config-server
-#      - eureka-server
-#      - cyna_db
+  config-server:
+    container_name: 'config-server'
+    build: ./config-server
+    ports:
+      - '8888:8888'
+
+  eureka-server:
+    container_name: 'eureka-server'
+    build: ./EurekaServer
+    ports:
+      - '8761:8761'
+    depends_on:
+      - config-server
+
+  api-gateway:
+    container_name: 'api-gateway'
+    build: ./api-gateway
+    ports:
+      - '8080:8080'
+    depends_on:
+      - config-server
+      - eureka-server
+    environment:
+      - URL-CONFIG-SERVER=http://config-server:8888
+
+  auth-users:
+    container_name: 'auth-users'
+    build: ./auth-users
+    depends_on:
+      - config-server
+      - eureka-server
+      - cyna_db
+
+  products:
+    container_name: 'products'
+    build: ./products
+    ports:
+      - '8082:8082'
+    volumes:
+      - ./products/images:/home/images
+    environment:
+      - directory.images=/home/images
+      - static.location=/images
+    depends_on:
+      - config-server
+      - eureka-server
+      - cyna_db
+
+  subscriptions:
+    container_name: 'subscriptions'
+    build: ./subscriptions
+    ports:
+      - '8083:8083'
+    volumes:
+      - ./subscriptions/images:/home/images
+    environment:
+      - directory.images=/home/images
+      - static.location=/images
+      - STRIPE_PUBLISHABLE_KEY=pk_test_51RD0MgRqA5M57Pbc8jw3RQjngdvI1g1tZV05aKYmtGNbnGh0WYSylqHDAyk7USvUT51osjfQ0yZnucFn2XZubPaE00sqVg9z4P
+      - STRIPE_SECRET_KEY=sk_test_51RD0MgRqA5M57PbckdBXhTZWzbRXIfqv6Vd2Vq5WMVpk9F4UzH2blBhywEeb7H4pG4u2XlsstCURX44pZyBNg1jV00Dyl1O9vn
+      - STRIPE_WEBHOOK_SECRET=whsec_08e553ba8667029c8ae146c2b92cf21c6793d2864a3a74397b1178262d98b2a1
+      - API_TOKEN=mlsn.d9038881333ff79e651de384e23449400c2ef9e55a9195efeb16a7bc027d1286
+    depends_on:
+      - config-server
+      - eureka-server
+      - cyna_db
 
   cyna_db:
     container_name: 'cyna_db'

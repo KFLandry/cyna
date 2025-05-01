@@ -113,8 +113,12 @@ public class ProductService {
         return productRepo.findById(productId).orElseThrow();
     }
 
-    public String udpate(ProductDto productdto) {
-        Product product = productRepo.findById(productdto.getId()).orElseThrow();
+    public String update(ProductDto productdto) {
+        System.out.println(">>> Tentative de mise à jour : productdto = " + productdto);
+        System.out.println(">>> ID reçu = " + productdto.getId());
+        Product product = productRepo.findById(productdto.getId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Produit introuvable avec l'ID : " + productdto.getId()));
+
 
         // On update uniquement les champs ayant change
 
@@ -140,7 +144,6 @@ public class ProductService {
     public String deleteProduct(long id) {
         productRepo.deleteById(id);
 
-        // On supprime le produit de Stripe
         this.deleteStripePrice(id);
 
         return "Operation successful";

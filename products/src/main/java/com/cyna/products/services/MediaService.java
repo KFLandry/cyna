@@ -72,6 +72,10 @@ public class MediaService {
         return images;
     }
 
+    public Optional<Media> getMediaById(Long id) {
+        return mediaRepo.findById(id);
+    }
+
     public void deleteImages(Set<Media> images) {
 
         for (Media media : images) {

@@ -1,8 +1,9 @@
 package com.cyna.products.controllers;
 
 import com.cyna.products.dto.ProductDto;
-import com.cyna.products.models.Product;
+import com.cyna.products.dto.ProductResponseDto;
 import com.cyna.products.services.ProductService;
+import com.cyna.products.mappers.ProductMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -10,6 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1/products")
@@ -17,20 +19,28 @@ import java.util.Set;
 public class ProductController {
 
     private final ProductService productService;
+    private final ProductMapper productMapper;
 
     @GetMapping("/{productId}")
-    public ResponseEntity<Product> getProduct(@PathVariable long productId) {
-        return ResponseEntity.ok(productService.getProduct(productId));
+    public ResponseEntity<ProductResponseDto> getProduct(@PathVariable long productId) {
+        var product = productService.getProduct(productId);
+        return ResponseEntity.ok(productMapper.toDto(product));
     }
 
     @GetMapping
-    public ResponseEntity<List<Product>> getProducts() {
-        return ResponseEntity.ok(productService.getProducts());
+    public ResponseEntity<List<ProductResponseDto>> getProducts() {
+        var products = productService.getProducts();
+        return ResponseEntity.ok(products.stream()
+                .map(productMapper::toDto)
+                .collect(Collectors.toList()));
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<Product>> searchProducts(@RequestParam(required = false) String text){
-        return ResponseEntity.ok(productService.findByText(text));
+    public ResponseEntity<List<ProductResponseDto>> searchProducts(@RequestParam(required = false) String text) {
+        var results = productService.findByText(text);
+        return ResponseEntity.ok(results.stream()
+                .map(productMapper::toDto)
+                .collect(Collectors.toList()));
     }
 
     @PostMapping
@@ -39,10 +49,9 @@ public class ProductController {
     }
 
     @PatchMapping
-    public ResponseEntity<String> update(@ModelAttribute ProductDto productdto) {
-        return ResponseEntity.ok(productService.udpate(productdto));
+    public ResponseEntity<String> update(@RequestBody ProductDto productdto) {
+        return ResponseEntity.ok(productService.update(productdto));
     }
-
 
     @PatchMapping("/{productId}/images")
     public ResponseEntity<String> addImages(@PathVariable long productId, @RequestParam("images") Set<MultipartFile> images) {

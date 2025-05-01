@@ -1,5 +1,6 @@
 package com.cyna.products.models;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -24,9 +25,13 @@ public class Category {
     @Column(nullable = false)
     private String name;
 
-    @Builder.Default
+    @Column(columnDefinition = "TEXT") // optionnel si tu veux du texte long
+    private String description;
+
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "category", cascade = CascadeType.PERSIST)
+    @JsonManagedReference // 👈 indique le parent de la relation
     private Set<Product> products = new HashSet<>();
+
 
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
     @JoinTable(
