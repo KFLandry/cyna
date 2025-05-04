@@ -50,9 +50,6 @@ public class User implements UserDetails {
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, mappedBy = "user")
     private List<Address> addresses;
 
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, mappedBy = "user")
-    private List<BankCard> cards;
-
     @Column(nullable = false)
     @JsonIgnore
     private String password;

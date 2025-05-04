@@ -39,7 +39,7 @@ public class StripeController {
         return ResponseEntity.ok(stripeService.createCustomer(customerDto));
     }
 
-    @PostMapping
+    @PostMapping("/payment-method")
     public ResponseEntity<String> addPaymentMethod(@RequestBody PaymentMethodDto paymentMethodDto) {
         return ResponseEntity.ok(stripeService.addPaymentMethod(paymentMethodDto));
     }

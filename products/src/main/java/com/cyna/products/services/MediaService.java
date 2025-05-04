@@ -3,10 +3,12 @@ package com.cyna.products.services;
 import com.cyna.products.models.Media;
 import com.cyna.products.repositories.MediaRepo;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.io.File;
 import java.io.IOException;
@@ -37,8 +39,8 @@ public class MediaService {
             try {
                 Files.createDirectories(directory);
             } catch (IOException e) {
-                log.error("Erreur lors de la création du répertoire: {}", e.getMessage(), e);
-                throw new RuntimeException("Impossible de créer le répertoire " + imagesPath, e);
+                log.error("[MediaService][uploadFiles] error : {}", e.getMessage(), e);
+                throw new ResponseStatusException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Impossible to create a directory "+imagesPath, e);
             }
         }
 

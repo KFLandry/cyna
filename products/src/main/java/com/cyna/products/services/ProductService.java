@@ -52,11 +52,11 @@ public class ProductService {
 
         Product product = productRepo.findById(productId).orElseThrow();
         if (imagesId.size() >= product.getImages().size()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You most delete less images than what exist");
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "You most delete less images than what exist");
         }
         Set<Media> imagesToDelete = mediaService.getMediaByIds(imagesId);
         if (imagesToDelete.isEmpty() || imagesToDelete.size() != imagesId.size()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Images must exist");
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Images must exist");
         }
         Set<Media> imagesToKeep = product.getImages();
         imagesToDelete.forEach(imagesToKeep::remove);
@@ -166,8 +166,8 @@ public class ProductService {
             log.debug("[ProductsService][CreateStripePrice] Create a stripe products. Result: {}", result);
             return result;
         } catch (Exception e) {
-            log.error("[StripeService][updateCustomerId] Error while updating customerId", e);
-            throw new RuntimeException();
+            log.error("[StripeService][updateCustomerId] Error while creating Stripe price", e);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Error while creating Stripe price");
         }
     }
 
@@ -178,7 +178,8 @@ public class ProductService {
                     .uri(this.getServiceURI(SUBCRIPTIONS_ID) + "/api/v1/subscriptions/create-price/"+productId);
 
         } catch (Exception e) {
-            log.error("[StripeService][updateCustomerId] Error while updating customerId", e);
+            log.error("[StripeService][updateCustomerId] Error while deleting Sripe price", e);
+
         }
     }
 
@@ -186,7 +187,7 @@ public class ProductService {
         List<ServiceInstance> instances = discoveryClient.getInstances(serviceId);
         if (instances.isEmpty()) {
             log.error("No instances found for service: {}", serviceId);
-            throw new RuntimeException("Auth-users service not available");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No instances found for service: " + serviceId);
         }
 
         ServiceInstance serviceInstance = instances.getFirst();

@@ -5,3 +5,16 @@ spring:
     import: configserver:${URL-CONFIG-SERVER:http://localhost:8888}
   profiles:
     active: ${PROFILE:local}
+
+validate_email_endpoint :  ${FRONT_END_ENDPOINT:http://localhost:8080/api/v1/auth/validate-email}
+validate_account_endpoint :  ${FRONT_END_ENDPOINT:http://localhost:8080/api/v1/auth/validate-account}
+mailerSend:
+  from: ${MAIL_USERNAME:wilfried@trial-ywj2lpnqzo1g7oqz.mlsender.net}
+  support_email: ${SUPPORT_MAIL:wilfried@trial-ywj2lpnqzo1g7oqz.mlsender.net}
+  super_admin: ${SUPER_ADMIN:wilfrieddev0@gmail.com}
+  token: ${API_TOKEN}
+  templates:
+    generic_template: "3z0vklo86e147qrx"
+    generic_template_with_button: "jpzkmgq87o2g059v"
+    email_verified: "jy7zpl998erl5vx6"
+

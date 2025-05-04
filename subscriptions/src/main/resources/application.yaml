@@ -5,6 +5,3 @@ spring:
     import: configserver:${URL-CONFIG-SERVER:http://localhost:8888}
   profiles:
     active: ${PROFILE:local}
-
-
-

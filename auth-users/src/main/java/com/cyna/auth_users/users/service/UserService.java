@@ -1,6 +1,8 @@
 package com.cyna.auth_users.users.service;
 
+import com.cyna.auth_users.users.dto.UpdateUserDto;
 import com.cyna.auth_users.users.dto.UserDto;
+import com.cyna.auth_users.users.dto.UserMapper;
 import com.cyna.auth_users.users.models.ROLE;
 import com.cyna.auth_users.users.models.User;
 import com.cyna.auth_users.users.repositories.UserRepository;
@@ -33,16 +35,17 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final UserMapper userMapper;
 
-    public List<User> getAll() {
-        return userRepository.findAll();
+    public List<UserDto> getAll() {
+        return userRepository.findAll().stream().map(userMapper::UserToUserDto).toList();
     }
 
-    public User getById(Long id) {
-        return userRepository.findById(id).orElse(null);
+    public UserDto getById(Long id) {
+        return userMapper.UserToUserDto(userRepository.findById(id).orElse(null));
     }
 
-    public String update(Long id, UserDto userDto) {
+    public String update(Long id, UpdateUserDto userDto) {
         User user = userRepository.getReferenceById(id);
 
         User updateUser =  User.builder()
@@ -60,6 +63,7 @@ public class UserService {
                 .build();
 
         userRepository.save(updateUser);
+
         return "User updated";
     }
 
@@ -114,8 +118,8 @@ public class UserService {
     }
 
 
-    public List<User> getByName(String name) {
-        return userRepository.findByFirstnameContainingIgnoreCaseOrLastnameContainingIgnoreCase(name, name);
+    public List<UserDto> getByName(String name) {
+        return userRepository.findByFirstnameContainingIgnoreCaseOrLastnameContainingIgnoreCase(name, name).stream().map(userMapper::UserToUserDto).toList();
     }
 
 }

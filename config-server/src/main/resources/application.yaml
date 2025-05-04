@@ -3,11 +3,4 @@ spring :
     name : config-server
 
   profiles:
-    active: ${PROFILE:dev}
-
-server:
-  port: ${PORT:8888}
-
-logging:
-  level:
-    web: warn
+    active: ${PROFILE:local}
