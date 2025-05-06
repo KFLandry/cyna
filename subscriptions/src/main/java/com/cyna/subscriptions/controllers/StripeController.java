@@ -34,6 +34,21 @@ public class StripeController {
         return ResponseEntity.ok(stripeService.getCustomerPortal(customerId));
     }
 
+    @GetMapping("/")
+    public ResponseEntity<List<Subscription>> getSubscription(){
+        return ResponseEntity.ok(subscriptionsService.findAll());
+    }
+
+    @GetMapping({"/{id}"})
+    public ResponseEntity<Subscription> getSubscriptionById(@PathVariable(value = "id") long id){
+        return ResponseEntity.ok(subscriptionsService.findById(id));
+    }
+
+    @GetMapping(params = "customerId")
+    public ResponseEntity<List<Subscription>> getSubscriptionByCustomerId(@RequestParam("customerId") String customerId){
+        return ResponseEntity.ok(subscriptionsService.findByCustomerId(customerId));
+    }
+
     @PostMapping("/create-customer")
     public ResponseEntity<String> createCustomer(@RequestBody CustomerDto customerDto) {
         return ResponseEntity.ok(stripeService.createCustomer(customerDto));
@@ -64,23 +79,13 @@ public class StripeController {
         return ResponseEntity.ok(stripeService.handleWebhook(sigHeader, payload));
     }
 
-    @GetMapping
-    public ResponseEntity<List<Subscription>> getSubscription(){
-        return ResponseEntity.ok(subscriptionsService.findAll());
-    }
-
-    @GetMapping(params = "email")
-    public ResponseEntity<List<SubscriptionDto>> getSubscriptionByCustomer(@RequestParam("customerId") String customer){
-        return ResponseEntity.ok(null);
-    }
-
-    @GetMapping(params = "subcriptionNumber")
-    public ResponseEntity<List<SubscriptionDto>> getSubscriptionByCustomerId(@RequestParam("customerId") String subcriptionNumber){
-        return ResponseEntity.ok(null);
-    }
-
-    @PatchMapping
+    @PatchMapping("/subscriptionId")
     public ResponseEntity<SubscriptionDto> updateSubscription(@RequestBody SubscriptionDto subscriptionDto){
         return ResponseEntity.ok(null);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deleteSubscription(@PathVariable long id){
+        return  ResponseEntity.ok(subscriptionsService.delete(id));
     }
 }

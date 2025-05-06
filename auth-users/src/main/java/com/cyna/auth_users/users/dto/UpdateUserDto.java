@@ -10,7 +10,7 @@ import org.springframework.web.multipart.MultipartFile;
 @Data
 public class UpdateUserDto {
 
-    private String id;
+    private Long id;
     private String customerId;
     private String firstname;
     private String lastname;

@@ -1,9 +1,11 @@
 package com.cyna.auth_users.users.dto;
 
 import com.cyna.auth_users.users.models.ROLE;
+import lombok.Builder;
 import lombok.Data;
 
 @Data
+@Builder
 public class UserDto {
     private Long id;
 

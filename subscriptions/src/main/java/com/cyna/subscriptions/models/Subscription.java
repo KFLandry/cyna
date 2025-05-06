@@ -17,6 +17,7 @@ public class Subscription {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // And Id provide by stripe
     @Column(nullable = false, unique = true, name = "subscriptionId")
     private String subscriptionId;
 

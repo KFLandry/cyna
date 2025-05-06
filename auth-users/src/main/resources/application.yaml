@@ -6,8 +6,11 @@ spring:
   profiles:
     active: ${PROFILE:local}
 
-validate_email_endpoint :  ${FRONT_END_ENDPOINT:http://localhost:8080/api/v1/auth/validate-email}
-validate_account_endpoint :  ${FRONT_END_ENDPOINT:http://localhost:8080/api/v1/auth/validate-account}
+endpoints:
+  validate_email: ${FRONT_END_URL:http://localhost:8080/}api/v1/auth/validate-email
+  validate_account: ${FRONT_END_URL:http://localhost:8080/}api/v1/auth/validate-account
+  password_forgot: ${FRONT_END_URL:http://localhost:8080/}api/v1/auth/password-forgot
+
 mailerSend:
   from: ${MAIL_USERNAME:wilfried@trial-ywj2lpnqzo1g7oqz.mlsender.net}
   support_email: ${SUPPORT_MAIL:wilfried@trial-ywj2lpnqzo1g7oqz.mlsender.net}

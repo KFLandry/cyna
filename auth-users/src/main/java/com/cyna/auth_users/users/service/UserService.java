@@ -33,9 +33,13 @@ public class UserService {
     @Value("${directory.images}")
     private String imagesPath;
 
+    @Value("${endpoints.password_forgot}")
+    private String passwordForgotEndpoint;
+
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper;
+    private final MailerSendService mailerSendService;
 
     public List<UserDto> getAll() {
         return userRepository.findAll().stream().map(userMapper::UserToUserDto).toList();
@@ -122,4 +126,14 @@ public class UserService {
         return userRepository.findByFirstnameContainingIgnoreCaseOrLastnameContainingIgnoreCase(name, name).stream().map(userMapper::UserToUserDto).toList();
     }
 
+    public String passwordForget(String email) {
+        userRepository.findByEmail(email).ifPresent(user -> {
+            try {
+                mailerSendService.sendEmail(user.getEmail(), passwordForgotEndpoint+"?userId="+user.getId() , "password.forgot");
+            } catch (Exception e) {
+                throw new RuntimeException("[UserService][PasswordForget]", e);
+            }
+        });
+        return "Operation done!";
+    }
 }

@@ -6,10 +6,13 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface SubscriptionRepo extends CrudRepository<Subscription, Long> {
     Subscription findByOrderNumber(String orderNumber);
 
-    @SQLDelete(sql = "DELETE FROM Subscription S WHERE S.subscriptionId=:subscriptionId")
-    void deleteBySubscriptionId(@Param("subscriptionId") String subscriptionId);
+    List<Subscription> findByCustomerId(String customerId);
+
+    void deleteBySubscriptionId(String subscriptionId);
 }
