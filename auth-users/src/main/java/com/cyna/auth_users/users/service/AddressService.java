@@ -31,28 +31,34 @@ public class AddressService {
                 .findByIdOrCustomerId(addressDto.getUserId(), addressDto.getCustomerId())
                 .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
 
+        Integer postcode = validateAndParsePostcode(addressDto.getPostcode());
+
         Address address = Address.builder()
                 .user(user)
                 .name(addressDto.getName())
-                .postcode(Integer.valueOf(addressDto.getPostcode()))
+                .postcode(postcode)
                 .city(addressDto.getCity())
                 .country(addressDto.getCountry())
                 .url(addressDto.getUrl())
                 .build();
 
         addressRepository.save(address);
-
         return "Operation successful";
     }
 
     public String update(Long id, @Valid AddressDto addressDto) {
         Address address = addressRepository.getReferenceById(id);
 
-        // On met a jour uniquement les champs ayant été modifiés
-        Address updatedAddress =  Address.builder()
+        Integer postcode = address.getPostcode();
+        if (addressDto.getPostcode() != null) {
+            postcode = validateAndParsePostcode(addressDto.getPostcode());
+        }
+
+        Address updatedAddress = Address.builder()
                 .id(id)
+                .user(address.getUser()) // ← essentiel
                 .name(Optional.ofNullable(addressDto.getName()).orElse(address.getName()))
-                .postcode(Optional.ofNullable(addressDto.getPostcode()!=null? Integer.valueOf(addressDto.getPostcode()) : null).orElse(address.getPostcode()))
+                .postcode(postcode)
                 .city(Optional.ofNullable(addressDto.getCity()).orElse(address.getCity()))
                 .country(Optional.ofNullable(addressDto.getCountry()).orElse(address.getCountry()))
                 .url(Optional.ofNullable(addressDto.getUrl()).orElse(address.getUrl()))
@@ -66,5 +72,14 @@ public class AddressService {
         addressRepository.deleteById(id);
         return "Operation successful";
     }
+
+    private Integer validateAndParsePostcode(String postcodeStr) {
+        try {
+            Integer cp = Integer.parseInt(postcodeStr);
+            if (cp < 1000 || cp > 99999) throw new NumberFormatException();
+            return cp;
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Code postal invalide (format numérique 5 chiffres requis)");
+        }
+    }
 }
-//commit

@@ -7,12 +7,26 @@
 # You can add other services your application may depend on here, such as a
 # database or a cache. For examples, see the Awesome Compose repository:
 # https://github.com/docker/awesome-compose
-services:
-  server:
-    build:
-      context: .
-    ports:
-      - 8081:8081
+#services:
+#  auth-users:
+#    container_name: auth-users
+#    build:
+#      context: .
+#    ports:
+#      - 8081:8081
+
+auth-users:
+  container_name: auth-users
+  build:
+    context: .
+  ports:
+    - 8081:8081
+  volumes:
+    - ./uploads:/home/images
+  environment:
+    - static.location=http://localhost:8081/auth-users
+    - directory.images=/home/images
+
 
 # The commented out section below is an example of how to define a PostgreSQL
 # database that your application can use. `depends_on` tells Docker Compose to

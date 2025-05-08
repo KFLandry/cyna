@@ -27,6 +27,13 @@ services:
   auth-users:
     container_name: 'auth-users'
     build: ./auth-users
+    ports:
+      - '8081:8081'
+    volumes:
+      - ./uploads:/home/images
+    environment:
+      - static.location=http://localhost:8081/auth-users
+      - directory.images=/home/images
     depends_on:
       - config-server
       - eureka-server
