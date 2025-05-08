@@ -27,7 +27,10 @@ public class AddressService {
     }
 
     public String create(@Valid AddressDto addressDto) {
-        User user = userRepository.getByIdOrCustomerId(addressDto.getUserId(), addressDto.getCustomerId());
+        User user = userRepository
+                .findByIdOrCustomerId(addressDto.getUserId(), addressDto.getCustomerId())
+                .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
+
         Address address = Address.builder()
                 .user(user)
                 .name(addressDto.getName())
