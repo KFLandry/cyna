@@ -1,6 +1,5 @@
 spring :
   application :
     name : config-server
-
   profiles:
-    active: ${PROFILE:local}
+    active: ${PROFILE:dev}

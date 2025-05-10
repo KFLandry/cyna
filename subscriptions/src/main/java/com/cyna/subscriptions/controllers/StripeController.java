@@ -1,9 +1,6 @@
 package com.cyna.subscriptions.controllers;
 
-import com.cyna.subscriptions.dto.CustomerDto;
-import com.cyna.subscriptions.dto.PaymentMethodDto;
-import com.cyna.subscriptions.dto.PriceDto;
-import com.cyna.subscriptions.dto.SubscriptionDto;
+import com.cyna.subscriptions.dto.*;
 import com.cyna.subscriptions.models.Subscription;
 import com.cyna.subscriptions.services.StripeService;
 import com.cyna.subscriptions.services.SubscriptionsService;
@@ -32,6 +29,21 @@ public class StripeController {
     @GetMapping("/{customerId}/customer-portal")
     public ResponseEntity<String> customerPortal(@PathVariable String customerId) {
         return ResponseEntity.ok(stripeService.getCustomerPortal(customerId));
+    }
+
+    @GetMapping("/")
+    public ResponseEntity<List<Subscription>> getSubscription(){
+        return ResponseEntity.ok(subscriptionsService.findAll());
+    }
+
+    @GetMapping({"/{id}"})
+    public ResponseEntity<Subscription> getSubscriptionById(@PathVariable(value = "id") long id){
+        return ResponseEntity.ok(subscriptionsService.findById(id));
+    }
+
+    @GetMapping(params = "customerId")
+    public ResponseEntity<List<Subscription>> getSubscriptionByCustomerId(@RequestParam("customerId") String customerId){
+        return ResponseEntity.ok(subscriptionsService.findByCustomerId(customerId));
     }
 
     @PostMapping("/create-customer")
@@ -64,23 +76,18 @@ public class StripeController {
         return ResponseEntity.ok(stripeService.handleWebhook(sigHeader, payload));
     }
 
-    @GetMapping
-    public ResponseEntity<List<Subscription>> getSubscription(){
-        return ResponseEntity.ok(subscriptionsService.findAll());
-    }
-
-    @GetMapping(params = "email")
-    public ResponseEntity<List<SubscriptionDto>> getSubscriptionByCustomer(@RequestParam("customerId") String customer){
-        return ResponseEntity.ok(null);
-    }
-
-    @GetMapping(params = "subcriptionNumber")
-    public ResponseEntity<List<SubscriptionDto>> getSubscriptionByCustomerId(@RequestParam("customerId") String subcriptionNumber){
-        return ResponseEntity.ok(null);
-    }
-
-    @PatchMapping
+    @PatchMapping("/subscriptionId")
     public ResponseEntity<SubscriptionDto> updateSubscription(@RequestBody SubscriptionDto subscriptionDto){
         return ResponseEntity.ok(null);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deleteSubscription(@PathVariable long id){
+        return  ResponseEntity.ok(subscriptionsService.delete(id));
+    }
+
+    @GetMapping(value = "/top-products", params = "top")
+    public ResponseEntity<List<TopProduct>> getTopProducts(@RequestParam int top){
+        return ResponseEntity.ok(subscriptionsService.getTopProducts(top));
     }
 }

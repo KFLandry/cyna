@@ -1,6 +1,7 @@
 package com.cyna.products.controllers;
 
 import com.cyna.products.dto.CategoryDto;
+import com.cyna.products.dto.CategoryGetDto;
 import com.cyna.products.models.Category;
 import com.cyna.products.services.CategoryService;
 import lombok.AllArgsConstructor;
@@ -19,7 +20,7 @@ public class CategoryController {
     private CategoryService categoryService;
 
     @GetMapping()
-    public ResponseEntity<List<Category>> getCategories() {
+    public ResponseEntity<List<CategoryGetDto>> getCategories() {
         return ResponseEntity.ok(categoryService.getCategories());
     }
 

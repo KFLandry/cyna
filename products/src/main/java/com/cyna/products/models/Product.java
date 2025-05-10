@@ -1,12 +1,14 @@
 package com.cyna.products.models;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.Set;
 
 @Entity
@@ -43,10 +45,11 @@ public class Product {
     @Column(nullable = false)
     private Long amount;
 
-    @ManyToOne
+    @JsonBackReference
     @JoinColumn(nullable = false, name = "category_id")
-    @JsonIgnore
+    @ManyToOne(fetch = FetchType.LAZY)
     private Category category;
+
 
     @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     @JoinTable(
@@ -60,4 +63,15 @@ public class Product {
     @Enumerated(EnumType.STRING)
     private ProductStatus status = ProductStatus.AVAILABLE;
 
+    @Column(nullable = false)
+    private LocalDateTime createdAt;
+
+    @Column(nullable = false)
+    private LocalDateTime updatedAt;
+
+    @Column(nullable = false)
+    private boolean active;
+
+    @Column(nullable = false)
+    private boolean promo;
 }

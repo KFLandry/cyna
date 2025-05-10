@@ -1,6 +1,7 @@
 package com.cyna.products.controllers;
 
 import com.cyna.products.dto.ProductDto;
+import com.cyna.products.dto.ProductGetDto;
 import com.cyna.products.models.Product;
 import com.cyna.products.services.ProductService;
 import lombok.RequiredArgsConstructor;
@@ -24,8 +25,13 @@ public class ProductController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Product>> getProducts() {
+    public ResponseEntity<List<ProductGetDto>> getProducts() {
         return ResponseEntity.ok(productService.getProducts());
+    }
+
+    @GetMapping(value = "top-products")
+    public ResponseEntity<List<ProductGetDto>> getTopProducts(@RequestParam(value = "top", defaultValue = "10") int top, @RequestParam(value = "promo", defaultValue = "1")  boolean promo, @RequestParam(value = "active", defaultValue = "1") boolean active) {
+        return ResponseEntity.ok(productService.getTopProducts(top, promo, active));
     }
 
     @GetMapping("/search")

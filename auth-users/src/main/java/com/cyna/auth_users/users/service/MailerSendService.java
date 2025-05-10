@@ -40,11 +40,11 @@ public class MailerSendService implements IEmailService {
     }
 
     @Override
-    public void sendEmail(String to, String link, String eventType){
+    public void sendEmail(String to, String link, String eventType) throws Exception {
         this.sendEmail(to, link, eventType, null);
     }
 
-    public void sendEmail(String to, String link, String eventType,  String requester) {
+    public void sendEmail(String to, String link, String eventType,  String requester) throws Exception {
 
         email.setFrom("Cyna Team", from);
         Recipient recipient = new Recipient(to.split("@")[0], to);
@@ -75,6 +75,12 @@ public class MailerSendService implements IEmailService {
                 // Button
                 button.put("label", "Verify my email");
                 break;
+            case "password.forgot":
+                subject = "Password forgot";
+                email.addPersonalization(recipient, "subject", subject);
+                email.addPersonalization(recipient, "message", "Your password is forgotten.");
+
+
             default:
                 log.error("[MailerSendService][sendEmail] {} are unhandled! ", eventType);
                 break;
@@ -89,6 +95,7 @@ public class MailerSendService implements IEmailService {
             mailSender.emails().send(email);
         } catch (MailerSendException e) {
             log.error("[MailerSendService][sendMail] Error while sending email to {}", to, e);
+            throw new MailerSendException("[MailerSendService][sendMail] Error while sending email to {}");
         }
 
     }
