@@ -1,9 +1,6 @@
 package com.cyna.subscriptions.controllers;
 
-import com.cyna.subscriptions.dto.CustomerDto;
-import com.cyna.subscriptions.dto.PaymentMethodDto;
-import com.cyna.subscriptions.dto.PriceDto;
-import com.cyna.subscriptions.dto.SubscriptionDto;
+import com.cyna.subscriptions.dto.*;
 import com.cyna.subscriptions.models.Subscription;
 import com.cyna.subscriptions.services.StripeService;
 import com.cyna.subscriptions.services.SubscriptionsService;
@@ -87,5 +84,10 @@ public class StripeController {
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteSubscription(@PathVariable long id){
         return  ResponseEntity.ok(subscriptionsService.delete(id));
+    }
+
+    @GetMapping(value = "/top-products", params = "top")
+    public ResponseEntity<List<TopProduct>> getTopProducts(@RequestParam int top){
+        return ResponseEntity.ok(subscriptionsService.getTopProducts(top));
     }
 }

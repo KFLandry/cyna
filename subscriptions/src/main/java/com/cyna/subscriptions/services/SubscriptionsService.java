@@ -1,5 +1,6 @@
 package com.cyna.subscriptions.services;
 
+import com.cyna.subscriptions.dto.TopProduct;
 import com.cyna.subscriptions.models.Subscription;
 import com.cyna.subscriptions.repositories.SubscriptionRepo;
 import com.stripe.exception.StripeException;
@@ -9,7 +10,9 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+import org.hibernate.query.spi.Limit;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -72,6 +75,7 @@ public class SubscriptionsService {
                 .quantity(Optional.ofNullable(subscription.getQuantity()).orElse(initialSubscription.getQuantity()))
                 .amount(Optional.of(subscription.getAmount()).orElse(initialSubscription.getAmount()))
                 .paymentMethod(Optional.ofNullable(subscription.getPaymentMethod()).orElse(initialSubscription.getPaymentMethod()))
+                .updatedAt(LocalDateTime.now())
                 .build();
 
         return subscriptionRepo.save(updatedSubscription);
@@ -79,5 +83,9 @@ public class SubscriptionsService {
 
     public List<Subscription> findByCustomerId(String customerId) {
         return subscriptionRepo.findByCustomerId(customerId);
+    }
+
+    public List<TopProduct> getTopProducts(int top) {
+        return subscriptionRepo.getTopsByProductId(top);
     }
 }

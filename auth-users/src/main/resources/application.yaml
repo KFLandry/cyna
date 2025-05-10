@@ -2,9 +2,9 @@ spring:
   application:
     name: auth-users
   config:
-    import: configserver:${URL-CONFIG-SERVER:http://localhost:8888}
+    import: configserver:${URL-CONFIG-SERVER:http://config-server:8888}
   profiles:
-    active: ${PROFILE:local}
+    active: ${PROFILE:dev}
 
 endpoints:
   validate_email: ${FRONT_END_URL:http://localhost:8080/}api/v1/auth/validate-email
