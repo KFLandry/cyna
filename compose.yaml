@@ -11,7 +11,8 @@ services:
     ports:
       - '8761:8761'
     depends_on:
-      - config-server
+      config-server:
+        condition: service_started
 
   api-gateway:
     container_name: 'api-gateway'
@@ -19,8 +20,10 @@ services:
     ports:
       - '8080:8080'
     depends_on:
-      - config-server
-      - eureka-server
+      config-server:
+        condition: service_started
+      eureka-server:
+        condition: service_started
     environment:
       - URL-CONFIG-SERVER=http://config-server:8888
 
@@ -35,9 +38,12 @@ services:
       - static.location=http://localhost:8081/auth-users
       - directory.images=/home/images
     depends_on:
-      - config-server
-      - eureka-server
-      - cyna_db
+      config-server:
+        condition: service_started
+      eureka-server:
+        condition: service_started
+      cyna_db:
+        condition: service_healthy
 
   products:
     container_name: 'products'
@@ -50,9 +56,12 @@ services:
       - directory.images=/home/images
       - static.location=/images
     depends_on:
-      - config-server
-      - eureka-server
-      - cyna_db
+      config-server:
+        condition: service_started
+      eureka-server:
+        condition: service_started
+      cyna_db:
+        condition: service_healthy
 
   subscriptions:
     container_name: 'subscriptions'
@@ -64,107 +73,35 @@ services:
     environment:
       - directory.images=/home/images
       - static.location=/images
-      - STRIPE_PUBLISHABLE_KEY=pk_test_51RD0MgRqA5M57Pbc8jw3RQjngdvI1g1tZV05aKYmtGNbnGh0WYSylqHDAyk7USvUT51osjfQ0yZnucFn2XZubPaE00sqVg9z4P
-      - STRIPE_SECRET_KEY=sk_test_51RD0MgRqA5M57PbckdBXhTZWzbRXIfqv6Vd2Vq5WMVpk9F4UzH2blBhywEeb7H4pG4u2XlsstCURX44pZyBNg1jV00Dyl1O9vn
-      - STRIPE_WEBHOOK_SECRET=whsec_08e553ba8667029c8ae146c2b92cf21c6793d2864a3a74397b1178262d98b2a1
-      - API_TOKEN=mlsn.d9038881333ff79e651de384e23449400c2ef9e55a9195efeb16a7bc027d1286
+      - STRIPE_PUBLISHABLE_KEY=pk_test_51RD0Mg...
+      - STRIPE_SECRET_KEY=sk_test_51RD0Mg...
+      - STRIPE_WEBHOOK_SECRET=whsec_08e553ba...
+      - API_TOKEN=mlsn.d9038881333...
     depends_on:
-      - config-server
-      - eureka-server
-      - cyna_db
-  config-server:
-    container_name: 'config-server'
-    build: ./config-server
-    ports:
-      - '8888:8888'
-
-  eureka-server:
-    container_name: 'eureka-server'
-    build: ./EurekaServer
-    ports:
-      - '8761:8761'
-    depends_on:
-      - config-server
-
-  api-gateway:
-    container_name: 'api-gateway'
-    build: ./api-gateway
-    ports:
-      - '8080:8080'
-    depends_on:
-      - config-server
-      - eureka-server
-    environment:
-      - URL-CONFIG-SERVER=http://config-server:8888
-
-  auth-users:
-    container_name: 'auth-users'
-    build: ./auth-users
-    ports:
-      - '8081:8081' #exposition des ports 8081
-    volumes:
-      - ./uploads:/home/images
-    environment:
-      - static.location=http://localhost:8081/auth-users
-      - directory.images=/home/images
-    depends_on:
-      - config-server
-      - eureka-server
-      - cyna_db
-
-  products:
-    container_name: 'products'
-    build: ./products
-    ports:
-      - '8082:8082'
-    volumes:
-      - ./products/images:/home/images
-    environment:
-      - directory.images=/home/images
-      - static.location=/images
-    depends_on:
-      - config-server
-      - eureka-server
-      - cyna_db
-
-  subscriptions:
-    container_name: 'subscriptions'
-    build: ./subscriptions
-    ports:
-      - '8083:8083'
-    volumes:
-      - ./subscriptions/images:/home/images
-    environment:
-      - directory.images=/home/images
-      - static.location=/images
-      - STRIPE_PUBLISHABLE_KEY=pk_test_51RD0MgRqA5M57Pbc8jw3RQjngdvI1g1tZV05aKYmtGNbnGh0WYSylqHDAyk7USvUT51osjfQ0yZnucFn2XZubPaE00sqVg9z4P
-      - STRIPE_SECRET_KEY=sk_test_51RD0MgRqA5M57PbckdBXhTZWzbRXIfqv6Vd2Vq5WMVpk9F4UzH2blBhywEeb7H4pG4u2XlsstCURX44pZyBNg1jV00Dyl1O9vn
-      - STRIPE_WEBHOOK_SECRET=whsec_08e553ba8667029c8ae146c2b92cf21c6793d2864a3a74397b1178262d98b2a1
-      - API_TOKEN=mlsn.d9038881333ff79e651de384e23449400c2ef9e55a9195efeb16a7bc027d1286
-    depends_on:
-      - config-server
-      - eureka-server
-      - cyna_db
+      config-server:
+        condition: service_started
+      eureka-server:
+        condition: service_started
+      cyna_db:
+        condition: service_healthy
 
   cyna_db:
     container_name: 'cyna_db'
     image: 'mysql:latest'
     environment:
-      - 'MYSQL_DATABASE=cyna_db'
-      - 'MYSQL_PASSWORD=cyna_pwd'
-      - 'MYSQL_ROOT_PASSWORD=cyna_pwd'
-      - 'MYSQL_USER=cyna_user'
+      - MYSQL_DATABASE=cyna_db
+      - MYSQL_PASSWORD=cyna_pwd
+      - MYSQL_ROOT_PASSWORD=cyna_pwd
+      - MYSQL_USER=cyna_user
     volumes:
       - db-data:/var/lib/mysql
     ports:
       - '3307:3306'
     healthcheck:
-      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 10s
       timeout: 5s
       retries: 5
-#    secrets:
-#      - db-password
 
   phpmyadmin:
     container_name: 'phpmyadmin'
@@ -174,10 +111,8 @@ services:
       - 8000:80
     environment:
       - PMA_ARBITRARY=1
-      - PMA_HOST=cyna_db   # <<== AJOUT TRÈS IMPORTANT
-      - PMA_PORT=3306    # <<== Facultatif, mais recommandé
+      - PMA_HOST=cyna_db
+      - PMA_PORT=3306
+
 volumes:
   db-data:
-#secrets:
-#  db-password:
-#    external: true
