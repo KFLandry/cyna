@@ -46,7 +46,7 @@ public class ProductController {
 
     @PatchMapping
     public ResponseEntity<String> update(@ModelAttribute ProductDto productdto) {
-        return ResponseEntity.ok(productService.udpate(productdto));
+        return ResponseEntity.ok(productService.update(productdto));
     }
 
 

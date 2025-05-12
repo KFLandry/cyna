@@ -1,9 +1,7 @@
 package com.cyna.products.dto;
 
-import com.cyna.products.models.Category;
 import com.cyna.products.models.Media;
 import com.cyna.products.models.Product;
-import org.mapstruct.Mapper;
 import org.springframework.stereotype.Component;
 
 import java.util.LinkedHashSet;

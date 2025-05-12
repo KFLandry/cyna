@@ -1,89 +1,90 @@
 services:
-  config-server:
-    container_name: 'config-server'
-    build: ./config-server
-    ports:
-      - '8888:8888'
-
-  eureka-server:
-    container_name: 'eureka-server'
-    build: ./EurekaServer
-    ports:
-      - '8761:8761'
-    depends_on:
-      config-server:
-        condition: service_started
-
-  api-gateway:
-    container_name: 'api-gateway'
-    build: ./api-gateway
-    ports:
-      - '8080:8080'
-    depends_on:
-      config-server:
-        condition: service_started
-      eureka-server:
-        condition: service_started
-    environment:
-      - URL-CONFIG-SERVER=http://config-server:8888
-
-  auth-users:
-    container_name: 'auth-users'
-    build: ./auth-users
-    ports:
-      - '8081:8081' #exposition des ports 8081
-    volumes:
-      - ./uploads:/home/images
-    environment:
-      - static.location=http://localhost:8081/auth-users
-      - directory.images=/home/images
-    depends_on:
-      config-server:
-        condition: service_started
-      eureka-server:
-        condition: service_started
-      cyna_db:
-        condition: service_healthy
-
-  products:
-    container_name: 'products'
-    build: ./products
-    ports:
-      - '8082:8082'
-    volumes:
-      - ./products/images:/home/images
-    environment:
-      - directory.images=/home/images
-      - static.location=/images
-    depends_on:
-      config-server:
-        condition: service_started
-      eureka-server:
-        condition: service_started
-      cyna_db:
-        condition: service_healthy
-
-  subscriptions:
-    container_name: 'subscriptions'
-    build: ./subscriptions
-    ports:
-      - '8083:8083'
-    volumes:
-      - ./subscriptions/images:/home/images
-    environment:
-      - directory.images=/home/images
-      - static.location=/images
-      - STRIPE_PUBLISHABLE_KEY=pk_test_51RD0Mg...
-      - STRIPE_SECRET_KEY=sk_test_51RD0Mg...
-      - STRIPE_WEBHOOK_SECRET=whsec_08e553ba...
-      - API_TOKEN=mlsn.d9038881333...
-    depends_on:
-      config-server:
-        condition: service_started
-      eureka-server:
-        condition: service_started
-      cyna_db:
-        condition: service_healthy
+#  config-server:
+#    container_name: 'config-server'
+#    build: ./config-server
+#    ports:
+#      - '8888:8888'
+#
+#  eureka-server:
+#    container_name: 'eureka-server'
+#    build: ./EurekaServer
+#    ports:
+#      - '8761:8761'
+#    depends_on:
+#      config-server:
+#        condition: service_started
+#
+#  api-gateway:
+#    container_name: 'api-gateway'
+#    build: ./api-gateway
+#    ports:
+#      - '8080:8080'
+#    depends_on:
+#      config-server:
+#        condition: service_started
+#      eureka-server:
+#        condition: service_started
+#    environment:
+#      - URL-CONFIG-SERVER=http://config-server:8888
+#
+#  auth-users:
+#    container_name: 'auth-users'
+#    build: ./auth-users
+#    ports:
+#      - '8081:8081' #exposition des ports 8081
+#    volumes:
+#      - ./uploads:/home/images
+#    environment:
+#      - static.location=http://localhost:8081/auth-users
+#      - directory.images=/home/images
+#      - SUPER_ADMIN=zodiaquestar@gmail.com
+#    depends_on:
+#      config-server:
+#        condition: service_started
+#      eureka-server:
+#        condition: service_started
+#      cyna_db:
+#        condition: service_healthy
+#
+#  products:
+#    container_name: 'products'
+#    build: ./products
+#    ports:
+#      - '8082:8082'
+#    volumes:
+#      - ./products/images:/home/images
+#    environment:
+#      - directory.images=/home/images
+#      - static.location=/images
+#    depends_on:
+#      config-server:
+#        condition: service_started
+#      eureka-server:
+#        condition: service_started
+#      cyna_db:
+#        condition: service_healthy
+#
+#  subscriptions:
+#    container_name: 'subscriptions'
+#    build: ./subscriptions
+#    ports:
+#      - '8083:8083'
+#    volumes:
+#      - ./subscriptions/images:/home/images
+#    environment:
+#      - directory.images=/home/images
+#      - static.location=/images
+#      - STRIPE_PUBLISHABLE_KEY=pk_test_51RFIAlR4HDvdHnh3kjIJjPVIV0u1LRfhbGfqQpiGliWgIbXjkpPfHzeLLWjzK7vHu0VmTQqV4HYQYrvsG6G9KLOA00nADdiJ0E
+#      - STRIPE_SECRET_KEY=51RFIAlR4HDvdHnh3mtvzfNGinHxKEyaSvAc6WRpDQkt9twvPYY8kRjSh2MVLR8wv7LggsGWBD7M4Mbfj3LytC5Cy00W4oFSLc6
+#      - STRIPE_WEBHOOK_SECRET=whsec_b445870c24c152547e2cf7fd46d6767b55c9ea956be6d42dea53676b7c9f10af
+#      - API_TOKEN=mlsn.d9038881333ff79e651de3en84e23449400c2ef9e55a9195efeb16a7bc027d1286
+#    depends_on:
+#      config-server:
+#        condition: service_started
+#      eureka-server:
+#        condition: service_started
+#      cyna_db:
+#        condition: service_healthy
 
   cyna_db:
     container_name: 'cyna_db'
