@@ -1,5 +1,7 @@
 package com.cyna.products.dto;
 
+import com.cyna.products.models.Media;
+import com.cyna.products.models.Product;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
@@ -9,7 +11,7 @@ import java.util.List;
 import java.util.Set;
 
 @Data
-public class CategoryDto {
+public class CategoryGetDto {
     private long id;
 
     private String name;
@@ -17,7 +19,7 @@ public class CategoryDto {
     private String description;
 
     @ArraySchema(schema = @Schema(type = "string", format = "binary"))
-    private Set<MultipartFile> images;
+    private Set<Media> images;
 
-    private List<ProductDto> productList;
+    private List<Product> products;
 }

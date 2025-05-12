@@ -1,16 +1,17 @@
 package com.cyna.products.dto;
 
+import com.cyna.products.models.Media;
 import com.cyna.products.models.PricingModel;
 import com.cyna.products.models.ProductStatus;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
-import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.Set;
 
 @Data
-public class ProductDto {
+public class ProductGetDto {
     private long id;
 
     private String priceId;
@@ -30,9 +31,15 @@ public class ProductDto {
     private long categoryId;
 
     @ArraySchema(schema = @Schema(type = "string", format = "binary"))
-    private Set<MultipartFile> images;
+    private Set<Media> images;
 
     private ProductStatus status = ProductStatus.AVAILABLE;
-    private boolean active = true;
-    private boolean promo = false;
+
+    private LocalDateTime createdAt;
+
+    private LocalDateTime updatedAt;
+
+    private boolean active;
+
+    private boolean promo;
 }

@@ -40,10 +40,10 @@ public class AuthService {
     @Value("${mailerSend.super_admin}")
     private String superAdminEmail;
 
-    @Value("${validate_email_endpoint}")
+    @Value("${endpoints.validate_email}")
     private String validateEmailEndpoint;
 
-    @Value("${validate_account_endpoint}")
+    @Value("${endpoints.validate_account}")
     private String validateAccountEndpoint;
 
     public AuthResponse login(LoginRequest request) {
@@ -88,8 +88,13 @@ public class AuthService {
 
     public Object register(CreateUserDto request) {
         //Pour les comptes Admins, un mail de validation de création de compte est envoyé au super ADMIN, la validation des emails
-        if (ROLE.valueOf(request.getRole()).equals(ROLE.ADMIN))
-            mailerSendService.sendEmail(superAdminEmail, validateAccountEndpoint+"?email="+request.getEmail(), "validate.account", request.getLastname() + " " + request.getFirstname());
+        if (ROLE.valueOf(request.getRole()).equals(ROLE.ADMIN)) {
+            try {
+                mailerSendService.sendEmail(superAdminEmail, validateAccountEndpoint+"?email="+request.getEmail(), "validate.account", request.getLastname() + " " + request.getFirstname());
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
 
         User user = User.builder()
                 .firstname(request.getFirstname())
@@ -130,7 +135,11 @@ public class AuthService {
     }
 
     public String verifyEmail(String email) {
-        mailerSendService.sendEmail(email, validateEmailEndpoint+"?email="+email, "validate.email");
+        try {
+            mailerSendService.sendEmail(email, validateEmailEndpoint+"?email="+email, "validate.email");
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
         return "Email Sent";
     }
 }

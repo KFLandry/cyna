@@ -1,7 +1,6 @@
 package com.cyna.products.services;
 
-import com.cyna.products.dto.PriceDto;
-import com.cyna.products.dto.ProductDto;
+import com.cyna.products.dto.*;
 import com.cyna.products.models.Category;
 import com.cyna.products.models.Media;
 import com.cyna.products.models.Product;
@@ -20,6 +19,8 @@ import org.springframework.web.server.ResponseStatusException;
 
 
 import java.net.URI;
+import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -36,6 +37,7 @@ public class ProductService {
     private final CategoryService categoryService;
     private final DiscoveryClient discoveryClient;
     private final RestClient.Builder restClientBuilder;
+    private final ProductMapper productMapper;
 
     public String addImages(long productId, Set<MultipartFile> images) {
 
@@ -85,6 +87,10 @@ public class ProductService {
                 .amount(productDto.getAmount())
                 .status(productDto.getStatus())
                 .images(images)
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .active(productDto.isActive())
+                .promo(productDto.isPromo())
                 .build();
 
         // On save pour avoir l'id du produit
@@ -101,8 +107,9 @@ public class ProductService {
 
     }
 
-    public List<Product> getProducts() {
-        return (List<Product>) productRepo.findAll();
+    public List<ProductGetDto> getProducts() {
+        List<Product> products = (List<Product>) productRepo.findAll();
+        return products.stream().map(productMapper::toDto).toList();
     }
 
     public List<Product> findByText(String text) {
@@ -134,6 +141,9 @@ public class ProductService {
                         categoryService.getCategoryById(productdto.getCategoryId()) :
                         product.getCategory())
                 .amount(Optional.of(productdto.getAmount()).orElse(product.getAmount()))
+                .active(productdto.isActive())
+                .promo(productdto.isPromo())
+                .updatedAt(LocalDateTime.now())
                 .build();
 
         productRepo.save(updatedProduct);
@@ -197,5 +207,16 @@ public class ProductService {
         log.debug("Calling auth service at: {}", serviceInstance.getUri());
 
         return serviceInstance.getUri();
+    }
+
+    public List<ProductGetDto> getTopProducts(int top, boolean active, boolean promo) {
+        List<TopProduct> topProducts = Collections.singletonList(restClientBuilder.build()
+                .get()
+                .uri(this.getServiceURI(SUBCRIPTIONS_ID) + "/api/v1/subscriptions/top-products?top=" + top)
+                .retrieve()
+                .body(TopProduct.class));
+
+        List<Product> products = topProducts.stream().map(p -> productRepo.findById(p.getProductId()).orElse(null)).toList();
+        return products.stream().filter(p -> (p.isActive()==active && p.isPromo()==promo)).toList().stream().map(productMapper::toDto).toList();
     }
 }

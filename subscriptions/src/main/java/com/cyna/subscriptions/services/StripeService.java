@@ -26,6 +26,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.net.URI;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -290,6 +291,8 @@ public class StripeService {
                 .paymentMethod(subscription.getDefaultPaymentMethod())
                 .amount(subscription.getBillingCycleAnchor())
                 .quantity(subscription.getItems().getData().getFirst().getQuantity())
+                .createdAt(LocalDateTime.now())
+                .createdAt(LocalDateTime.now())
                 .build();
         return subscriptionService.create(newSubscription);
     }

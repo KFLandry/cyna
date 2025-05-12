@@ -1,6 +1,8 @@
 package com.cyna.products.models;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,6 +19,9 @@ import java.util.Set;
 @NoArgsConstructor
 @Builder
 @Data
+@JsonIdentityInfo(
+        generator = ObjectIdGenerators.PropertyGenerator.class,
+        property = "id")
 public class Category {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,18 +30,15 @@ public class Category {
     @Column(nullable = false)
     private String name;
 
-    @Column(columnDefinition = "TEXT") // optionnel si tu veux du texte long
-    private String description;
-
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "category", cascade = CascadeType.PERSIST)
-    @JsonManagedReference // 👈 indique le parent de la relation
-    private Set<Product> products = new HashSet<>();
+    @JsonManagedReference
+    @OneToMany(mappedBy = "category", cascade = CascadeType.PERSIST)
+    private List<Product> products = new ArrayList<>();
 
 
-    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
+    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     @JoinTable(
-            name = "media_category",
             joinColumns = @JoinColumn(name = "category_id"),
+            name = "media_category",
             inverseJoinColumns = @JoinColumn(name = "media_id")
     )
     private Set<Media> images = new HashSet<>();

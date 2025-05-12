@@ -2,6 +2,9 @@ package com.cyna.auth_users.auth.controller;
 
 import com.cyna.auth_users.auth.dto.*;
 import com.cyna.auth_users.auth.service.AuthService;
+import com.cyna.auth_users.users.dto.UpdateUserDto;
+import com.cyna.auth_users.users.dto.UserDto;
+import com.cyna.auth_users.users.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +16,8 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AuthService authService;
+
+    private final UserService userService;
 
     @PostMapping("/signin")
     public ResponseEntity<AuthResponse> signin(@Valid @RequestBody LoginRequest request) {
@@ -30,17 +35,27 @@ public class AuthController {
     }
 
     @GetMapping("/verify-email")
-    public ResponseEntity<String> verifyEmail(@RequestParam String email) {
+    public ResponseEntity<String> verifyEmail(@RequestParam("email") String email) {
         return ResponseEntity.ok(authService.verifyEmail(email));
     }
 
     @GetMapping("/validate-email")
-    public ResponseEntity<String> validateEmail(@RequestParam String email) {
+    public ResponseEntity<String> validateEmail(@RequestParam("email") String email) {
         return ResponseEntity.ok(authService.validateEmail(email));
     }
 
     @GetMapping("/validate-account")
-    public ResponseEntity<String> validateAccount(@RequestParam String email) {
+    public ResponseEntity<String> validateAccount(@RequestParam("email") String email) {
         return ResponseEntity.ok(authService.validateAccount(email));
+    }
+
+    @GetMapping(value = "/password-forgot")
+    public ResponseEntity<String> passwordForgot(@RequestParam("email") String email) {
+        return ResponseEntity.ok(userService.passwordForget(email));
+    }
+
+    @PostMapping("/password-forgot/{userId}")
+    public ResponseEntity<String> passwordForgot(@Valid @PathVariable("userId") long userId, @RequestBody UpdateUserDto user) {
+        return ResponseEntity.ok(userService.update(userId, user));
     }
 }

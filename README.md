@@ -33,6 +33,7 @@ Ce projet est une architecture **microservices** basée sur **Spring Boot**, ave
    
 ## NB :
 Pour un lancement en local hors docker, utiliser le profil : local 
+Avec 
 Pour lancer le service Subscription en local
   - Entrer vos KEY APIs dans les variables d'environnement de la configuration de lancement ou charger un fichier .env, suivant la nommage des variables present dans la config du service
   - Activer l'ecoute du service Subscriptions des webhooks envoyés par Stripe avec la commande
