@@ -12,7 +12,7 @@ import java.util.Set;
 
 @Repository
 public interface ProductRepo extends CrudRepository<Product, Long>{
-    @Query(value = "SELECT * FROM products WHERE " +
+    @Query(value = "SELECT * FROM products  WHERE " +
             "MATCH(name, description, brand) " +
             "AGAINST(:text IN BOOLEAN MODE)",
             nativeQuery = true)

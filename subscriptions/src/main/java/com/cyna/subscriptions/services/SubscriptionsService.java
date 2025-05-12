@@ -10,7 +10,6 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
-import org.hibernate.query.spi.Limit;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -19,13 +18,12 @@ import java.util.Optional;
 
 @Service
 @Transactional
-@Log4j2
 @RequiredArgsConstructor
+@Log4j2
 public class SubscriptionsService {
-    private SubscriptionRepo subscriptionRepo;
+    private final SubscriptionRepo subscriptionRepo;
 
     private StripeService stripeService;
-
 
     public Subscription create(Subscription subscription) {
         return subscriptionRepo.save(subscription);
@@ -53,7 +51,7 @@ public class SubscriptionsService {
     }
 
     public List<Subscription> findAll() {
-        return (List<Subscription>) subscriptionRepo.findAll();
+        return subscriptionRepo.findAll();
     }
 
     public Subscription findByOrderNumber(String orderNumber) {
@@ -64,7 +62,7 @@ public class SubscriptionsService {
         return subscriptionRepo.findById(id).orElse(null);
     }
 
-    public Subscription update(Subscription subscription) {
+    public void update(Subscription subscription) {
 
         // TODO : Implementer une logique de validation coté client avec de modifier la subscription.
 
@@ -78,7 +76,7 @@ public class SubscriptionsService {
                 .updatedAt(LocalDateTime.now())
                 .build();
 
-        return subscriptionRepo.save(updatedSubscription);
+        subscriptionRepo.save(updatedSubscription);
     }
 
     public List<Subscription> findByCustomerId(String customerId) {

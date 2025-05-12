@@ -30,6 +30,10 @@ public class Category {
     @Column(nullable = false)
     private String name;
 
+    @Column (nullable = false)
+    private String description;
+
+
     @JsonManagedReference
     @OneToMany(mappedBy = "category", cascade = CascadeType.PERSIST)
     private List<Product> products = new ArrayList<>();

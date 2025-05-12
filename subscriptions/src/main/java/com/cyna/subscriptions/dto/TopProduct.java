@@ -1,9 +1,11 @@
 package com.cyna.subscriptions.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Data
+@AllArgsConstructor
 public class TopProduct {
-    private long productId;
-    private int salesNumber;
+    private long product_id;
+    private long sales_number;
 }
