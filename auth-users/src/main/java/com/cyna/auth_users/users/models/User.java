@@ -1,6 +1,7 @@
 package com.cyna.auth_users.users.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
@@ -48,6 +49,7 @@ public class User implements UserDetails {
     private ROLE roles;
 
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, mappedBy = "user")
+    @JsonManagedReference
     private List<Address> addresses;
 
     @Column(nullable = false)

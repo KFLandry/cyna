@@ -213,7 +213,7 @@ public class ProductService {
                 .retrieve()
                 .body(TopProduct.class));
 
-        List<Product> products = topProducts.stream().map(p -> productRepo.findById(p.getProductId()).orElse(null)).toList();
+        List<Product> products = topProducts.stream().map(p -> productRepo.findById(p.getProduct_id()).orElse(null)).toList();
         return products.stream().filter(p -> (p.isActive()==active && p.isPromo()==promo)).toList().stream().map(productMapper::toDto).toList();
     }
 }
