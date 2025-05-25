@@ -3,7 +3,7 @@ package com.cyna.products.services;
 import com.cyna.products.dto.CategoryDto;
 import com.cyna.products.dto.CategoryGetDto;
 import com.cyna.products.dto.CategoryMapper;
-import com.cyna.products.dto.ProductMapper;
+import com.cyna.products.dto.ProductGetMapper;
 import com.cyna.products.models.Category;
 import com.cyna.products.models.Media;
 import com.cyna.products.repositories.CategoryRepo;
@@ -31,7 +31,7 @@ public class CategoryService {
     private CategoryMapper categoryMapper;
 
     @Autowired
-    private ProductMapper productMapper;
+    private ProductGetMapper productMapper;
 
     public String createCategory(CategoryDto categoryDto) {
 

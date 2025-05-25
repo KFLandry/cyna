@@ -37,7 +37,7 @@ public class ProductService {
     private final CategoryService categoryService;
     private final DiscoveryClient discoveryClient;
     private final RestClient.Builder restClientBuilder;
-    private final ProductMapper productMapper;
+    private final ProductGetMapper productMapper;
 
     public String addImages(long productId, Set<MultipartFile> images) {
 

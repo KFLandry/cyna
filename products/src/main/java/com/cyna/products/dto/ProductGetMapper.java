@@ -8,7 +8,7 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 @Component
-public class ProductMapper{
+public class ProductGetMapper {
 
     public ProductGetDto toDto(Product product) {
         if ( product == null ) {
