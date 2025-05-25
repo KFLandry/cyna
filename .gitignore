@@ -3,6 +3,7 @@ target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
+.env
 !**/resources/.env
 /subscriptions/src/main/resources/.env
 /auth-users/src/main/resources/.env
