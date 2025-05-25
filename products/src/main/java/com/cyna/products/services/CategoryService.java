@@ -39,6 +39,7 @@ public class CategoryService {
         Category category =  Category.builder()
                 .name(categoryDto.getName())
                 .images(medias)
+                .description(categoryDto.getDescription())
                 .build();
         categoryRepo.save(category);
         return "Operation successful";

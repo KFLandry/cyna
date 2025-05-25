@@ -4,6 +4,6 @@ import lombok.Data;
 
 @Data
 public class TopProduct {
-    private long productId;
-    private int salesNumber;
+    private long product_id;
+    private long sales_number;
 }
