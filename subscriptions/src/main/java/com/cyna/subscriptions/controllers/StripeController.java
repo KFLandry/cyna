@@ -58,7 +58,7 @@ public class StripeController {
 
     @PostMapping("/create-price")
     public ResponseEntity<PriceDto> createPrice(@RequestBody PriceDto priceDto){
-       return ResponseEntity.ok(stripeService.createPrice(priceDto));
+        return ResponseEntity.ok(stripeService.createPrice(priceDto));
     }
 
     @PostMapping("/create-subscription")

@@ -1,6 +1,8 @@
 spring:
   application:
     name: subscriptions
+#  config:
+#    import: configserver:${URL-CONFIG-SERVER:http://config-server:8888}
   config:
     import: configserver:${URL-CONFIG-SERVER:http://localhost:8888}
   profiles:

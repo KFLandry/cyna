@@ -18,12 +18,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.server.ResponseStatusException;
+import java.util.Objects;
+
 
 import java.net.URI;
 import java.time.LocalDateTime;
@@ -85,26 +88,43 @@ public class StripeService {
     }
 
     public PriceDto createPrice(PriceDto priceDto) {
-
-        PriceCreateParams params = PriceCreateParams.builder()
-                .setCurrency(priceDto.getCurrency())
-                .setUnitAmount(priceDto.getAmount())
-                .setRecurring(PriceCreateParams.Recurring.builder()
-                        .setInterval(PriceCreateParams.Recurring.Interval.MONTH)
-                        .build())
-                .setProductData(PriceCreateParams.ProductData.builder()
-                        .setId(priceDto.getProductId())
-                        .setName(priceDto.getProductName())
-                        .build())
-                .build();
         try {
+            // Optionnel : vérifier s'il existe déjà un prix similaire pour ce produit
+            PriceListParams listParams = PriceListParams.builder()
+                    .setProduct(priceDto.getProductId())
+                    .setActive(true)
+                    .setLimit(100L)
+                    .build();
+
+            PriceCollection prices = Price.list(listParams);
+            boolean alreadyExists = prices.getData().stream().anyMatch(existingPrice ->
+                    Objects.equals(existingPrice.getUnitAmount(), priceDto.getAmount()) &&
+                            Objects.equals(existingPrice.getCurrency(), priceDto.getCurrency().toLowerCase())
+            );
+
+            if (alreadyExists) {
+                System.out.println("Un prix équivalent existe déjà, mais une nouvelle création est quand même effectuée.");
+            }
+
+            // Création du prix (même si existant)
+            PriceCreateParams params = PriceCreateParams.builder()
+                    .setCurrency(priceDto.getCurrency())
+                    .setUnitAmount(priceDto.getAmount())
+                    .setRecurring(PriceCreateParams.Recurring.builder()
+                            .setInterval(PriceCreateParams.Recurring.Interval.MONTH)
+                            .build())
+                    .setProduct(priceDto.getProductId())
+                    .build();
+
             Price price = Price.create(params);
             priceDto.setPriceId(price.getId());
             return priceDto;
+
         } catch (StripeException e) {
-            throw new ResponseStatusException(HttpStatusCode.valueOf(400), e.getStripeError().getMessage());
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getStripeError().getMessage());
         }
     }
+
 
     public String createSubscription(SubscriptionDto subscriptionDto) {
 
