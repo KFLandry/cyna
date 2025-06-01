@@ -1,5 +1,7 @@
 package com.cyna.products.controllers;
 
+import com.cyna.products.dto.CarouselDto;
+import com.cyna.products.dto.CarouselGetDto;
 import com.cyna.products.models.Carousel;
 import com.cyna.products.services.CarouselService;
 import lombok.RequiredArgsConstructor;
@@ -16,8 +18,8 @@ public class CarouselController {
     private final CarouselService carouselService;
 
     @GetMapping
-    public ResponseEntity<List<Carousel>> getCarousels() {
-        return ResponseEntity.ok(carouselService.getAllCarousel());
+    public ResponseEntity<List<CarouselGetDto>> getCarousels(@RequestParam(value ="limits", defaultValue = "10") long limit) {
+        return ResponseEntity.ok(carouselService.getAllCarousel(limit));
     }
 
     @GetMapping("/{id}")
@@ -26,12 +28,12 @@ public class CarouselController {
     }
 
     @PostMapping
-    public ResponseEntity<Carousel> create(@RequestBody Carousel carousel) {
+    public ResponseEntity<Carousel> create(@RequestBody CarouselDto carousel) {
         return ResponseEntity.ok(carouselService.create(carousel));
     }
 
     @PatchMapping
-    public ResponseEntity<Carousel> update(@RequestBody Carousel carousel) {
+    public ResponseEntity<Carousel> update(@RequestBody CarouselDto carousel) {
         return ResponseEntity.ok(carouselService.update(carousel));
     }
 

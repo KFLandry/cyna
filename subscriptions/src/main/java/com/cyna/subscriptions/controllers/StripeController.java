@@ -31,6 +31,11 @@ public class StripeController {
         return ResponseEntity.ok(stripeService.getCustomerPortal(customerId));
     }
 
+    @GetMapping("/{customerId}/ephemeral-key")
+    public ResponseEntity<String> ephemeralKey(@PathVariable String customerId) {
+        return ResponseEntity.ok(stripeService.getEphemeralKey(customerId));
+    }
+    
     @GetMapping("/")
     public ResponseEntity<List<Subscription>> getSubscription(){
         return ResponseEntity.ok(subscriptionsService.findAll());
