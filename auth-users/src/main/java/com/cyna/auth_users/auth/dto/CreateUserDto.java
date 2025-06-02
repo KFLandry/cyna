@@ -1,6 +1,5 @@
 package com.cyna.auth_users.auth.dto;
 
-import com.cyna.auth_users.users.models.ROLE;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

@@ -42,4 +42,6 @@ public class ProductGetDto {
     private boolean active;
 
     private boolean promo;
+
+    private long salesNumber;
 }

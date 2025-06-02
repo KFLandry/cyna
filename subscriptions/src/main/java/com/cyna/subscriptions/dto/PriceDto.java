@@ -1,5 +1,6 @@
 package com.cyna.subscriptions.dto;
 
+import com.cyna.subscriptions.models.PricingModel;
 import com.google.gson.annotations.SerializedName;
 import lombok.Data;
 
@@ -21,4 +22,7 @@ public class PriceDto {
 
     @SerializedName("description")
     private String description;
+
+    @SerializedName("pricingModel")
+    private PricingModel pricingModel;
 }

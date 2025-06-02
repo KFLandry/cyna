@@ -17,13 +17,10 @@ import org.springframework.web.client.RestClient;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
-
 import java.net.URI;
 import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -112,12 +109,21 @@ public class ProductService {
         return products.stream().map(productMapper::toDto).toList();
     }
 
-    public List<Product> findByText(String text) {
-        return productRepo.findByText(text);
+    public Pagination findByText(String text, long page, long size) {
+        List<ProductGetDto> products = productRepo.findByText(text).stream()
+                .skip(page==1 ? 0 : page * size)
+                .limit(size)
+                .map(productMapper::toDto)
+                .toList();
+        return Pagination.builder()
+                .size(productRepo.countByText(text))
+                .products(products)
+                .build();
     }
 
-    public Product getProduct(long productId) {
-        return productRepo.findById(productId).orElseThrow();
+    public ProductGetDto getProduct(long productId) {
+        return productMapper.toDto(productRepo.findById(productId).orElseThrow());
+
     }
 
     public String udpate(ProductDto productdto) {
@@ -206,14 +212,67 @@ public class ProductService {
         return serviceInstance.getUri();
     }
 
-    public List<ProductGetDto> getTopProducts(int top, boolean active, boolean promo) {
-        List<TopProduct> topProducts = Collections.singletonList(restClientBuilder.build()
-                .get()
-                .uri(this.getServiceURI(SUBCRIPTIONS_ID) + "/api/v1/subscriptions/top-products?top=" + top)
-                .retrieve()
-                .body(TopProduct.class));
+    public List<ProductGetDto> getTopProducts(int top, Boolean promo, Boolean active) {
+        List<TopProduct> topProducts = Arrays.asList(restClientBuilder.build()
+            .get()
+            .uri(this.getServiceURI(SUBCRIPTIONS_ID) + "/api/v1/subscriptions/top-products?top=" + top)
+            .retrieve()
+            .body(TopProduct[].class));
 
-        List<Product> products = topProducts.stream().map(p -> productRepo.findById(p.getProduct_id()).orElse(null)).toList();
-        return products.stream().filter(p -> (p.isActive()==active && p.isPromo()==promo)).toList().stream().map(productMapper::toDto).toList();
+        // Map productId to sales number for quick lookup
+        Map<Long, Long> salesMap = topProducts.stream()
+            .collect(Collectors.toMap(TopProduct::getProduct_id, TopProduct::getSales_number));
+
+        List<Product> products = topProducts.stream()
+            .map(p -> productRepo.findById(p.getProduct_id()).orElse(null))
+            .filter(Objects::nonNull)
+            .filter(p -> (active == null || p.isActive() == active) && (promo == null || p.isPromo() == promo))
+            .toList();
+
+        return products.stream()
+            .map(productMapper::toDto)
+            .peek(dto -> dto.setSalesNumber(salesMap.getOrDefault(dto.getId(), 0L)))
+            .toList();
+    }
+
+    public Pagination getProductsByCategories(Set<Long> categoryIds, boolean promoOnly, int page, int size, String sort) {
+        if (page < 0 || size <= 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Page and size must be greater than 0");
+        }
+        int offset = page * size;
+
+        List<Product> products = productRepo.findProductByCategoryAndPromo(categoryIds, promoOnly, size, offset)
+                .stream()
+                .sorted((p1, p2) -> {
+                    switch (sort) {
+                        case "asc" -> {
+                            return p1.getName().compareToIgnoreCase(p2.getName());
+                        }
+                        case "desc" -> {
+                            return p2.getName().compareToIgnoreCase(p1.getName());
+                        }
+                        case "priceAsc" -> {
+                            return Double.compare(p1.getAmount(), p2.getAmount());
+                        }
+                        case "priceDesc" -> {
+                            return Double.compare(p2.getAmount(), p1.getAmount());
+                        }
+                        case "createdAtAsc" -> {
+                            return p1.getCreatedAt().compareTo(p2.getCreatedAt());
+                        }
+                        case "createdAtDesc" -> {
+                            return p2.getCreatedAt().compareTo(p1.getCreatedAt());
+                        }
+                        default -> {
+                            return 0; // No sorting applied
+                        }
+                    }
+                })
+                .toList();
+
+        return Pagination.builder()
+                .size(productRepo.countProductByCategoryAndPromo(categoryIds, promoOnly ))
+                .products(products.stream().map(productMapper::toDto).toList())
+                .build();
     }
 }
