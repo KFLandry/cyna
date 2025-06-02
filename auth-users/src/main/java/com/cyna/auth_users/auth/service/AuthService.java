@@ -4,24 +4,21 @@ import com.cyna.auth_users.auth.dto.AuthResponse;
 import com.cyna.auth_users.auth.dto.CreateUserDto;
 import com.cyna.auth_users.auth.dto.LoginRequest;
 import com.cyna.auth_users.auth.dto.ValidationResult;
-import com.cyna.auth_users.users.repositories.UserRepository;
 import com.cyna.auth_users.users.models.ROLE;
 import com.cyna.auth_users.users.models.User;
+import com.cyna.auth_users.users.repositories.UserRepository;
 import com.cyna.auth_users.users.service.MailerSendService;
-import io.swagger.v3.oas.models.parameters.RequestBody;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatusCode;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Date;
@@ -50,7 +47,7 @@ public class AuthService {
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
         User user = repository.findByEmail(request.getEmail()).orElseThrow();
 
-        if (!(user.getRoles().equals(ROLE.ADMIN) && user.getEnabled()))
+        if (user.getRoles().equals(ROLE.ADMIN) && Boolean.FALSE.equals(user.getEnabled()))
             throw new ResponseStatusException(HttpStatusCode.valueOf(HttpStatus.SC_FORBIDDEN), "Account not activate");
 
         return AuthResponse.builder()

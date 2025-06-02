@@ -18,15 +18,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.server.ResponseStatusException;
-import java.util.Objects;
-
 
 import java.net.URI;
 import java.time.LocalDateTime;
@@ -51,6 +48,9 @@ public class StripeService {
 
     @Value("${stripe.return_url}")
     private String stripeReturnUrl;
+
+    @Value("${stripe.STRIPE_API_VERSION}")
+    private String stripeApiVersion;
 
     private final SubscriptionsService subscriptionService;
     private final MailerSendService mailerSendService;
@@ -80,7 +80,7 @@ public class StripeService {
             this.updateUser(userDto);
 
             Map<String, Object> responseData = new HashMap<>();
-            responseData.put("customer", customer);
+            responseData.put("customer", userDto);
             return StripeObject.PRETTY_PRINT_GSON.toJson(responseData);
         } catch (StripeException e) {
             throw new ResponseStatusException(HttpStatusCode.valueOf(400), e.getStripeError().getMessage());
@@ -88,58 +88,67 @@ public class StripeService {
     }
 
     public PriceDto createPrice(PriceDto priceDto) {
-        try {
-            // Optionnel : vérifier s'il existe déjà un prix similaire pour ce produit
-            PriceListParams listParams = PriceListParams.builder()
-                    .setProduct(priceDto.getProductId())
-                    .setActive(true)
-                    .setLimit(100L)
+        PriceCreateParams params = switch (priceDto.getPricingModel()) {
+            case ONE_TIME -> PriceCreateParams.builder()
+                    .setCurrency(priceDto.getCurrency())
+                    .setUnitAmount(priceDto.getAmount())
+                    .setProductData(PriceCreateParams.ProductData.builder()
+                            .setName(priceDto.getProductName())
+                            .putMetadata("productId", priceDto.getProductId())
+                            .build())
                     .build();
-
-            PriceCollection prices = Price.list(listParams);
-            boolean alreadyExists = prices.getData().stream().anyMatch(existingPrice ->
-                    Objects.equals(existingPrice.getUnitAmount(), priceDto.getAmount()) &&
-                            Objects.equals(existingPrice.getCurrency(), priceDto.getCurrency().toLowerCase())
-            );
-
-            if (alreadyExists) {
-                System.out.println("Un prix équivalent existe déjà, mais une nouvelle création est quand même effectuée.");
-            }
-
-            // Création du prix (même si existant)
-            PriceCreateParams params = PriceCreateParams.builder()
+            case PER_MONTH_PER_DEVICE, PER_MONTH_PER_USER -> PriceCreateParams.builder()
                     .setCurrency(priceDto.getCurrency())
                     .setUnitAmount(priceDto.getAmount())
                     .setRecurring(PriceCreateParams.Recurring.builder()
                             .setInterval(PriceCreateParams.Recurring.Interval.MONTH)
                             .build())
-                    .setProduct(priceDto.getProductId())
+                    .setProductData(PriceCreateParams.ProductData.builder()
+                            .setName(priceDto.getProductName())
+                            .putMetadata("productId", priceDto.getProductId())
+                            .build())
                     .build();
+            case PER_YEAR_PER_DEVICE, PER_YEAR_PER_USER -> PriceCreateParams.builder()
+                    .setCurrency(priceDto.getCurrency())
+                    .setUnitAmount(priceDto.getAmount())
+                    .setRecurring(PriceCreateParams.Recurring.builder()
+                            .setInterval(PriceCreateParams.Recurring.Interval.YEAR)
+                            .build())
+                    .setProductData(PriceCreateParams.ProductData.builder()
+                            .setName(priceDto.getProductName())
+                            .putMetadata("productId", priceDto.getProductId())
+                            .build())
+                    .build();
+            default ->
+                    throw new ResponseStatusException(HttpStatusCode.valueOf(400), "Unsupported pricing model: " + priceDto.getPricingModel());
+        };
 
+        try {
             Price price = Price.create(params);
             priceDto.setPriceId(price.getId());
             return priceDto;
-
         } catch (StripeException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getStripeError().getMessage());
+            throw new ResponseStatusException(HttpStatusCode.valueOf(400), e.getStripeError().getMessage());
         }
     }
 
-
     public String createSubscription(SubscriptionDto subscriptionDto) {
-
+        // On fait bien attention de mettre le comportement de paiement à DEFAULT_INCOMPLETE
         SubscriptionCreateParams params = SubscriptionCreateParams.builder()
                 .addItem(SubscriptionCreateParams.Item.builder()
                         .setPrice(subscriptionDto.getPriceId())
                         .setQuantity(subscriptionDto.getQuantity())
                         .build())
                 .setCustomer(subscriptionDto.getCustomerId())
-                .addAllExpand(Collections.singletonList("pending_setup_intent"))
+                .setPaymentBehavior(SubscriptionCreateParams.PaymentBehavior.DEFAULT_INCOMPLETE) // <-- important !
+                .addAllExpand(Collections.singletonList("latest_invoice.payment_intent")) // <-- important !
                 .build();
         try {
             Subscription subscription = Subscription.create(params);
             Map<String, Object> responseData = new HashMap<>();
-            responseData.put("subscription", subscription);
+            Invoice latestInvoice = Invoice.retrieve(subscription.getLatestInvoice());
+            responseData.put("customerId", subscription.getCustomer());
+            responseData.put("clientSecret", PaymentIntent.retrieve(latestInvoice.getPaymentIntent()).getClientSecret());
             return StripeObject.PRETTY_PRINT_GSON.toJson(responseData);
         } catch (StripeException e) {
             throw new ResponseStatusException(HttpStatusCode.valueOf(400), e.getStripeError().getMessage());
@@ -303,17 +312,23 @@ public class StripeService {
         if (subscription == null) {
             throw new NullPointerException("Subscription is null in customer.subscription.created event");
         }
-        com.cyna.subscriptions.models.Subscription newSubscription = com.cyna.subscriptions.models.Subscription.builder()
-                .subscriptionId(subscription.getId())
-                .customerId(subscription.getCustomer())
-                .productId(Long.valueOf(subscription.getItems().getData().getFirst().getPrice().getProduct()))
-                .status(SubscriptionListParams.Status.valueOf(subscription.getStatus()))
-                .paymentMethod(subscription.getDefaultPaymentMethod())
-                .amount(subscription.getBillingCycleAnchor())
-                .quantity(subscription.getItems().getData().getFirst().getQuantity())
-                .createdAt(LocalDateTime.now())
-                .createdAt(LocalDateTime.now())
-                .build();
+        com.cyna.subscriptions.models.Subscription newSubscription = null;
+        try {
+            newSubscription = com.cyna.subscriptions.models.Subscription.builder()
+                    .subscriptionId(subscription.getId())
+                    .customerId(subscription.getCustomer())
+                    .productId(Long.valueOf(Product.retrieve(subscription.getItems().getData().getFirst().getPrice().getProduct()).getMetadata().get("productId")))
+                    .status(SubscriptionListParams.Status.valueOf(subscription.getStatus().toUpperCase()))
+                    .paymentMethod(subscription.getDefaultPaymentMethod())
+                    .amount(Price.retrieve(subscription.getItems().getData().getFirst().getPrice().getId()).getUnitAmount())
+                    .quantity(subscription.getItems().getData().getFirst().getQuantity())
+                    .createdAt(LocalDateTime.now())
+                    .createdAt(LocalDateTime.now())
+                    .build();
+        } catch (StripeException e) {
+            log.error("[StripeService][processSubscriptionCreated] Error while processing subscription creation", e);
+            throw new RuntimeException(e);
+        }
         return subscriptionService.create(newSubscription);
     }
 
@@ -429,5 +444,19 @@ public class StripeService {
             throw new ResponseStatusException(HttpStatusCode.valueOf(400), e.getStripeError().getMessage());
         }
         return null;
+    }
+
+    public String getEphemeralKey(String customerId) {
+        EphemeralKeyCreateParams params = EphemeralKeyCreateParams.builder()
+                .setCustomer(customerId)
+                .setStripeVersion(stripeApiVersion)
+                .build();
+        try {
+            EphemeralKey ephemeralKey = EphemeralKey.create(params);
+            return ephemeralKey.getSecret();
+        } catch (StripeException e) {
+            log.error("[StripeService][getEphemeralKey] Error while creating ephemeral key for customerID : {}", customerId, e);
+            throw new ResponseStatusException(HttpStatusCode.valueOf(400), e.getStripeError().getMessage());
+        }
     }
 }

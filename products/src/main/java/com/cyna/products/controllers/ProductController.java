@@ -1,8 +1,8 @@
 package com.cyna.products.controllers;
 
+import com.cyna.products.dto.Pagination;
 import com.cyna.products.dto.ProductDto;
 import com.cyna.products.dto.ProductGetDto;
-import com.cyna.products.models.Product;
 import com.cyna.products.services.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +20,7 @@ public class ProductController {
     private final ProductService productService;
 
     @GetMapping("/{productId}")
-    public ResponseEntity<Product> getProduct(@PathVariable long productId) {
+    public ResponseEntity<ProductGetDto> getProduct(@PathVariable long productId) {
         return ResponseEntity.ok(productService.getProduct(productId));
     }
 
@@ -29,14 +29,26 @@ public class ProductController {
         return ResponseEntity.ok(productService.getProducts());
     }
 
+    @GetMapping("/pagination")
+    public ResponseEntity<Pagination> getProducts(@RequestParam(value = "page", defaultValue = "0") int page,
+                                                  @RequestParam(value = "size", defaultValue = "6") int size,
+                                                  @RequestParam(value = "categoriesIds", required = false) Set<Long> categoriesIds,
+                                                  @RequestParam(value = "promoOnly", defaultValue = "0") boolean promoOnly,
+                                                  @RequestParam(value = "sort", defaultValue = "desc") String sort
+    ) {
+        return ResponseEntity.ok((productService.getProductsByCategories(categoriesIds,promoOnly, page, size, sort)));
+    }
+
     @GetMapping(value = "top-products")
-    public ResponseEntity<List<ProductGetDto>> getTopProducts(@RequestParam(value = "top", defaultValue = "10") int top, @RequestParam(value = "promo", defaultValue = "1")  boolean promo, @RequestParam(value = "active", defaultValue = "1") boolean active) {
+    public ResponseEntity<List<ProductGetDto>> getTopProducts(@RequestParam(value = "top", defaultValue = "10") int top, @RequestParam(value = "promo", required = false)  Boolean promo, @RequestParam(value = "active", defaultValue = "true") Boolean active) {
         return ResponseEntity.ok(productService.getTopProducts(top, promo, active));
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<Product>> searchProducts(@RequestParam(required = false) String text){
-        return ResponseEntity.ok(productService.findByText(text));
+    public ResponseEntity<Pagination> searchProducts(@RequestParam(value = "keyword", required = false) String keyword,
+                                                        @RequestParam(value="page" , defaultValue = "0") long page,
+                                                        @RequestParam(value="size" , defaultValue = "6") long size) {
+        return ResponseEntity.ok(productService.findByText(keyword, page, size));
     }
 
     @PostMapping
