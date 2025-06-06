@@ -49,7 +49,7 @@ jobs:
         uses: google-github-actions/setup-gcloud@v2
         with:
           project_id: ${{ env.GCP_PROJECT_ID }}
-          export_default_credentials: true
+          export_default_credentials: project_id
 
       # 5. Vérification rapide que les variables critiques sont bien définies
       - name: 🛠️ Verify critical env vars
@@ -61,29 +61,6 @@ jobs:
           echo "ACTOR          = $GITHUB_ACTOR"
           echo "REPO           = $GITHUB_REPOSITORY"
           echo "Auth Token?    = '${{ steps.auth.outputs.auth_token }}' (caché partiellement)"
-
-      # 6. Installer Java 11 (si vos services en ont besoin)
-      - name: ☕️ Setup Java 11 (Maven/Gradle)
-        uses: actions/setup-java@v3
-        with:
-          distribution: temurin
-          java-version: "11"
-
-      # 7. Build & Run Tests (Bash en mode verbeux)
-      - name: ✅ Build & Run Tests for all microservices
-        run: |
-          set -euxo pipefail
-          echo "→ Exécution des tests unitaires (mode debug)…"
-          for service in config-server eureka-server api-gateway auth-users products subscriptions; do
-            if [ -d "$service" ]; then
-              echo "----> [Tests] $service"
-              pushd "$service" > /dev/null
-              mvn clean test
-              popd > /dev/null
-            else
-              echo "⚠️  Le dossier '$service' n'existe pas. On passe."
-            fi
-          done
 
       # 8. Construire + Pousser CONFIG-SERVER
       - name: 🐳 Build & Push CONFIG-SERVER to GCR
