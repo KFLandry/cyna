@@ -49,7 +49,6 @@ jobs:
         uses: google-github-actions/setup-gcloud@v2
         with:
           project_id: ${{ env.GCP_PROJECT_ID }}
-          export_default_credentials: 'project_id'
 
       # 5. Vérification rapide que les variables critiques sont bien définies
       - name: 🛠️ Verify critical env vars
