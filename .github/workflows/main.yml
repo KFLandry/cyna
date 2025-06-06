@@ -34,30 +34,30 @@ jobs:
 
       - name: Build and push Docker image CONFIG-SERVER
         run: |
-          docker build -t ghcr.io/OWNER_LOWER/cyna-config-server:latest ./config-server
-          docker push ghcr.io/OWNER_LOWER/cyna-config-server:latest
+          docker build -t ghcr.io/$OWNER_LOWER/cyna-config-server:latest ./config-server
+          docker push ghcr.io/$OWNER_LOWER/cyna-config-server:latest
 
       - name: Build and push Docker image EUREKA-SERVER
         run: |
-          docker build -t ghcr.io/OWNER_LOWER/cyna-eureka-server:latest ./eureka-server
-          docker push ghcr.io/OWNER_LOWER/cyna-eureka-server:latest
+          docker build -t ghcr.io/$OWNER_LOWER/cyna-eureka-server:latest ./eureka-server
+          docker push ghcr.io/$OWNER_LOWER/cyna-eureka-server:latest
           
       - name: Build and push Docker image API-GATEWAY
         run: |
-          docker build -t ghcr.io/OWNER_LOWER/cyna-api-gateway:latest ./api-gateway
-          docker push ghcr.io/OWNER_LOWER/cyna-api-gateway:latest
+          docker build -t ghcr.io/$OWNER_LOWER/cyna-api-gateway:latest ./api-gateway
+          docker push ghcr.io/$OWNER_LOWER/cyna-api-gateway:latest
           
       - name: Build and push Docker image AUTH-USERS
         run: |
-          docker build -t ghcr.io/OWNER_LOWER/cyna-auth-users:latest ./auth-users
-          docker push ghcr.io/OWNER_LOWER/cyna-auth-users:latest
+          docker build -t ghcr.io/$OWNER_LOWER/cyna-auth-users:latest ./auth-users
+          docker push ghcr.io/$OWNER_LOWER/cyna-auth-users:latest
           
       - name: Build and push Docker image PRODUCTS
         run: |
-          docker build -t ghcr.io/OWNER_LOWER/cyna-products:latest ./products
-          docker push ghcr.io/OWNER_LOWER/cyna-products:latest
+          docker build -t ghcr.io/$OWNER_LOWER/cyna-products:latest ./products
+          docker push ghcr.io/$OWNER_LOWER/cyna-products:latest
           
       - name: Build and push Docker image SUBSCRIPTIONS
         run: |
-          docker build -t ghcr.io/OWNER_LOWER/cyna-subscriptions:latest ./subscriptions
-          docker push ghcr.io/OWNER_LOWER/cyna-subscriptions:latest
+          docker build -t ghcr.io/$OWNER_LOWER/cyna-subscriptions:latest ./subscriptions
+          docker push ghcr.io/$OWNER_LOWER/cyna-subscriptions:latest
