@@ -228,4 +228,19 @@ jobs:
           ls -R .
 
           echo "--- Docker build SUBSCRIPTIONS (progress plain) ---"
-          docker build --progress=plain -t cyna-sub
+          docker build --progress=plain -t cyna-subscriptions:latest . 2>&1 | tee build-subscriptions.log
+
+          echo "--- Docker tag → ${GCR_HOSTNAME}/${GCP_PROJECT_ID}/cyna-subscriptions:latest ---"
+          docker tag cyna-subscriptions:latest \
+            ${GCR_HOSTNAME}/${GCP_PROJECT_ID}/cyna-subscriptions:latest
+
+          echo "--- Docker push → ${GCR_HOSTNAME}/${GCP_PROJECT_ID}/cyna-subscriptions:latest ---"
+          docker push ${GCR_HOSTNAME}/${GCP_PROJECT_ID}/cyna-subscriptions:latest 2>&1 | tee push-subscriptions.log
+
+      ########################################################################
+      # 15. (Optionnel) Afficher un message de fin
+      ########################################################################
+      - name: 🚀 All Docker steps completed (Debug Mode)
+        run: |
+          set -euxo pipefail
+          echo "✔ Toutes les étapes Docker (build + push) se sont terminées avec succès."
