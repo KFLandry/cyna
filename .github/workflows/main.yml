@@ -1,0 +1,52 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4.2.2
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3.3.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.PAT_GITHUB_PACKAGE_PUBLICATION }}
+      
+      - name: Build and push Docker image CONFIG-SERVER
+        run: |
+          docker build -t ghcr.io/${{ github.repository_owner }}/cyna-config-server:latest ./config-server
+          docker push ghcr.io/${{ github.repository_owner }}/cyna-config-server:latest
+
+      - name: Build and push Docker image EUREKA-SERVER
+        run: |
+          docker build -t ghcr.io/${{ github.repository_owner }}/cyna-eureka-server:latest ./eureka-server
+          docker push ghcr.io/${{ github.repository_owner }}/cyna-eureka-server:latest
+          
+      - name: Build and push Docker image API-GATEWAY
+        run: |
+          docker build -t ghcr.io/${{ github.repository_owner }}/cyna-api-gateway:latest ./api-gateway
+          docker push ghcr.io/${{ github.repository_owner }}/cyna-api-gateway:latest
+          
+      - name: Build and push Docker image AUTH-USERS
+        run: |
+          docker build -t ghcr.io/${{ github.repository_owner }}/cyna-auth-users:latest ./auth-users
+          docker push ghcr.io/${{ github.repository_owner }}/cyna-auth-users:latest
+          
+      - name: Build and push Docker image PRODUCTS
+        run: |
+          docker build -t ghcr.io/${{ github.repository_owner }}/cyna-products:latest ./products
+          docker push ghcr.io/${{ github.repository_owner }}/cyna-products:latest
+          
+      - name: Build and push Docker image SUBSCRIPTIONS
+        run: |
+          docker build -t ghcr.io/${{ github.repository_owner }}/cyna-subscriptions:latest ./subscriptions
+          docker push ghcr.io/${{ github.repository_owner }}/cyna-subscriptions:latest
