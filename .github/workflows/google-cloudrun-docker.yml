@@ -23,7 +23,7 @@
 #    - Cloud Run Developer (roles/run.developer)
 #
 #    You can learn more about setting IAM permissions at
-#    https://cloud.google.com/iam/docs/manage-access-other-resources
+#    https://cloud.google.com/iam/docs/manage-access-other-resources.
 #
 # 3. Change the values in the "env" block to match your values.
 
