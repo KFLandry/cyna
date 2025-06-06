@@ -39,7 +39,7 @@ jobs:
 
       - name: Build and push Docker image EUREKA-SERVER
         run: |
-          docker build -t ghcr.io/$OWNER_LOWER/cyna-eureka-server:latest ./eureka-server
+          docker build -t ghcr.io/$OWNER_LOWER/cyna-eureka-server:latest ./EurekaServer
           docker push ghcr.io/$OWNER_LOWER/cyna-eureka-server:latest
           
       - name: Build and push Docker image API-GATEWAY
