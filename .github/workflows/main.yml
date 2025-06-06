@@ -9,82 +9,84 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     env:
-      # Remplacez par l’ID de votre projet Google Cloud (tout en minuscules)
+      # Remplacez par l’ID de votre projet Google Cloud (en minuscules)
       GCP_PROJECT_ID: smiling-spring-462009-t0
-      # La région de votre GCR, ex. us.gcr.io / eu.gcr.io / asia.gcr.io ou pour Artifact Registry :
-      # REGION: europe-west1-docker.pkg.dev
+      # Pour Container Registry multi-régional, on peut garder gcr.io
       GCR_HOSTNAME: gcr.io
+      # Pour un endpoint régional (facultatif) : eu.gcr.io ou us.gcr.io, etc.
 
     steps:
       # 1. Récupérer le code
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2. Installer Google Cloud SDK
+      # 2. Authentifier à GCP via google-github-actions/auth@v2
+      #    → on stocke la clé JSON du Service Account dans le secret GCP_SA_KEY
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+          token_format: access_token
+
+      # 3. Installer et configurer le SDK gcloud (version v2.1.4 à ce jour) :contentReference[oaicite:0]{index=0}
       - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@v1
+        uses: google-github-actions/setup-gcloud@v2.1.4
         with:
           project_id: ${{ env.GCP_PROJECT_ID }}
-          service_account_key: ${{ secrets.GCP_SA_KEY }}
           export_default_credentials: true
 
-      # 3. (Optionnel) Configurer Docker pour GCR
-      #    --> En fait, setup-gcloud exporte déjà les credentials dans Docker si 'export_default_credentials: true'
-      #        mais si vous n’utilisez pas cette option, vous pouvez faire :
-      # - name: Authenticate Docker to GCR
-      #   run: |
-      #     echo "${{ secrets.GCP_SA_KEY }}" > ${HOME}/gcloud-key.json
-      #     gcloud auth activate-service-account --key-file=${HOME}/gcloud-key.json
-      #     gcloud auth configure-docker ${GCR_HOSTNAME}
-
-      # 5. Construire l’image Docker pour CONFIG-SERVER et la re‐tagger sous le formalisme GCR
+      # 6. Construire + re-tagger + pousser l’image CONFIG-SERVER vers GCR
       - name: Build & push Docker image CONFIG-SERVER to GCR
         run: |
-          # Chemin relatif du Dockerfile
           cd config-server
-
-          # Construire l’image locale (tag initial)
           docker build -t cyna-config-server:latest .
-
-          # Re-taguer au format GCR : gcr.io/PROJECT_ID/IMAGE_NAME:TAG
-          docker tag cyna-config-server:latest ${GCR_HOSTNAME}/${GCP_PROJECT_ID}/cyna-config-server:latest
-
-          # Pousser vers GCR
+          docker tag cyna-config-server:latest \
+            ${GCR_HOSTNAME}/${GCP_PROJECT_ID}/cyna-config-server:latest
           docker push ${GCR_HOSTNAME}/${GCP_PROJECT_ID}/cyna-config-server:latest
 
-      # 6. Faire de même pour les autres services...
+      # 7. Construire + re-tagger + pousser l’image EUREKA-SERVER
       - name: Build & push Docker image EUREKA-SERVER to GCR
         run: |
           cd eureka-server
           docker build -t cyna-eureka-server:latest .
-          docker tag cyna-eureka-server:latest ${GCR_HOSTNAME}/${GCP_PROJECT_ID}/cyna-eureka-server:latest
+          docker tag cyna-eureka-server:latest \
+            ${GCR_HOSTNAME}/${GCP_PROJECT_ID}/cyna-eureka-server:latest
           docker push ${GCR_HOSTNAME}/${GCP_PROJECT_ID}/cyna-eureka-server:latest
 
+      # 8. Construire + re-tagger + pousser l’image API-GATEWAY
       - name: Build & push Docker image API-GATEWAY to GCR
         run: |
           cd api-gateway
           docker build -t cyna-api-gateway:latest .
-          docker tag cyna-api-gateway:latest ${GCR_HOSTNAME}/${GCP_PROJECT_ID}/cyna-api-gateway:latest
+          docker tag cyna-api-gateway:latest \
+            ${GCR_HOSTNAME}/${GCP_PROJECT_ID}/cyna-api-gateway:latest
           docker push ${GCR_HOSTNAME}/${GCP_PROJECT_ID}/cyna-api-gateway:latest
 
+      # 9. Construire + re-tagger + pousser l’image AUTH-USERS
       - name: Build & push Docker image AUTH-USERS to GCR
         run: |
           cd auth-users
           docker build -t cyna-auth-users:latest .
-          docker tag cyna-auth-users:latest ${GCR_HOSTNAME}/${GCP_PROJECT_ID}/cyna-auth-users:latest
+          docker tag cyna-auth-users:latest \
+            ${GCR_HOSTNAME}/${GCP_PROJECT_ID}/cyna-auth-users:latest
           docker push ${GCR_HOSTNAME}/${GCP_PROJECT_ID}/cyna-auth-users:latest
 
+      # 10. Construire + re-tagger + pousser l’image PRODUCTS
       - name: Build & push Docker image PRODUCTS to GCR
         run: |
           cd products
           docker build -t cyna-products:latest .
-          docker tag cyna-products:latest ${GCR_HOSTNAME}/${GCP_PROJECT_ID}/cyna-products:latest
+          docker tag cyna-products:latest \
+            ${GCR_HOSTNAME}/${GCP_PROJECT_ID}/cyna-products:latest
           docker push ${GCR_HOSTNAME}/${GCP_PROJECT_ID}/cyna-products:latest
 
+      # 11. Construire + re-tagger + pousser l’image SUBSCRIPTIONS
       - name: Build & push Docker image SUBSCRIPTIONS to GCR
         run: |
           cd subscriptions
           docker build -t cyna-subscriptions:latest .
-          docker tag cyna-subscriptions:latest ${GCR_HOSTNAME}/${GCP_PROJECT_ID}/cyna-subscriptions:latest
+          docker tag cyna-subscriptions:latest \
+            ${GCR_HOSTNAME}/${GCP_PROJECT_ID}/cyna-subscriptions:latest
           docker push ${GCR_HOSTNAME}/${GCP_PROJECT_ID}/cyna-subscriptions:latest
