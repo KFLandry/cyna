@@ -1,246 +1,81 @@
-name: Build and Deploy to GCR (Debug Mode)
+name: Docker Image CI
 
 on:
   push:
-    branches: ["main"]
+    branches: [ "main" ]
   pull_request:
-    branches: ["main"]
-
-# Variables d’environnement globales pour le job
-env:
-  # Remplacez par l’ID EXACT de votre projet GCP (tout en minuscules)
-  GCP_PROJECT_ID: "smiling-spring-462009"
-  # Endpoint multi-régional de Container Registry (GCR). Si vous voulez forcer l’Europe, mettez "eu.gcr.io"
-  GCR_HOSTNAME: "gcr.io"
-  # Pour désactiver BuildKit de Docker et revenir au mode “legacy” (plus simple à déboguer)
-  DOCKER_BUILDKIT: "0"
+    branches: [ "main" ]
 
 jobs:
-  debug-and-deploy:
+  build:
     runs-on: ubuntu-latest
-
-    # Nécessaire pour google-github-actions/auth@v2 en Workload Identity (ou clé JSON)
-    permissions:
-      contents: read
-      id-token: write
-
+    env:
+      GCP_PROJECT: smiling-spring-462009-t0   # Replace with your secret name for the GCP project ID
     steps:
-      ########################################################################
-      # 1. Checkout du dépôt
-      ########################################################################
-      - name: 📥 Checkout repository
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      ########################################################################
-      # 2. Affichage de l’environnement au démarrage (pour vérifier que 
-      #    GITHUB_WORKSPACE, GITHUB_ACTOR, etc. sont bien disponibles)
-      ########################################################################
-      - name: 🔍 Print all environment variables
-        run: |
-          echo "===== ENVIRONMENT VARIABLES ====="
-          printenv | sort
-          echo "================================="
-
-      ########################################################################
-      # 3. Authentification à GCP (via Workload Identity ou JSON Key)
-      ########################################################################
-      - id: auth
-        name: 🔑 Authenticate to Google Cloud (workload identity)
-        uses: google-github-actions/auth@v2
+      # Authenticate to GCP using the JSON key stored in GitHub Secrets.
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v1
         with:
-          credentials_json: ${{ secrets.GCP_SA_KEY }}
-          token_format: access_token
+          credentials_json: ${{ secrets.GCP_SA_KEY }}   # Replace with your secret name for the service‐account JSON key
 
-      ########################################################################
-      # 4. Installation et configuration du SDK gcloud
-      ########################################################################
-      - name: ☁️ Set up Cloud SDK (gcloud)
-        uses: google-github-actions/setup-gcloud@v2
+      # Install gcloud CLI and set the project
+      - name: Set up gcloud CLI
+        uses: google-github-actions/setup-gcloud@v1
         with:
-          project_id: ${{ env.GCP_PROJECT_ID }}
+          project_id: ${{ env.GCP_PROJECT }}
 
-      ########################################################################
-      # 5. Configurer Docker pour utiliser les credentials GCP (GCR)
-      ########################################################################
-      - name: 🔧 Configure Docker to use gcloud credentials
+      # Configure Docker to use gcloud credential helper for GCR
+      - name: Configure Docker for GCR
         run: |
-          set -euxo pipefail
-          echo "→ Configuration de Docker pour GCR (${GCR_HOSTNAME})"
-          gcloud auth configure-docker ${GCR_HOSTNAME}
+          gcloud auth configure-docker
 
-      ########################################################################
-      # 6. Vérification rapide que les variables critiques sont bien définies
-      ########################################################################
-      - name: 🛠️ Verify critical env vars
+      # Build and push Docker image: cyna-config-server
+      - name: Build and push Docker image cyna-config-server
         run: |
-          set -euxo pipefail
-          echo "GCP_PROJECT_ID = $GCP_PROJECT_ID"
-          echo "GCR_HOSTNAME   = $GCR_HOSTNAME"
-          echo "WORKSPACE      = $GITHUB_WORKSPACE"
-          echo "ACTOR          = $GITHUB_ACTOR"
-          echo "REPO           = $GITHUB_REPOSITORY"
-          echo "Auth Token?    = '${{ steps.auth.outputs.auth_token }}' (si vide, c’est un problème)"
+          docker build \
+            -t gcr.io/${{ env.GCP_PROJECT }}/cyna-config-server:latest \
+            ./config-server
+          docker push gcr.io/${{ env.GCP_PROJECT }}/cyna-config-server:latest
 
-      ########################################################################
-      # 7. Installer Java 23 (au lieu de Java 11)
-      ########################################################################
-      - name: ☕️ Setup Java 23 (Maven/Gradle)
-        uses: actions/setup-java@v3
-        with:
-          distribution: temurin
-          java-version: "23"
-
-      ########################################################################
-      # 8. Build & Run Tests pour chaque microservice (si vous avez des tests
-      #    unitaires Maven/Gradle). Met à jour selon votre outil (Gradle, npm, etc.)
-      ########################################################################
-      - name: ✅ Build & Run Tests for all microservices
+      # Build and push Docker image: cyna-eureka-server
+      - name: Build and push Docker image cyna-eureka-server
         run: |
-          set -euxo pipefail
-          echo "→ Exécution des tests unitaires pour chaque module…"
-          for service in config-server eureka-server api-gateway auth-users products subscriptions; do
-            if [ -d "$service" ]; then
-              echo "----> [Tests] $service"
-              pushd "$service" > /dev/null
-              # Adaptation Maven : mvn clean test ; si Gradle, remplacer par ./gradlew test
-              mvn clean test
-              popd > /dev/null
-            else
-              echo "⚠️  Le dossier '$service' n'existe pas. On passe."
-            fi
-          done
+          docker build \
+            -t gcr.io/${{ env.GCP_PROJECT }}/cyna-eureka-server:latest \
+            ./EurekaServer
+          docker push gcr.io/${{ env.GCP_PROJECT }}/cyna-eureka-server:latest
 
-      ########################################################################
-      # 9. Construire + Pousser CONFIG-SERVER
-      ########################################################################
-      - name: 🐳 Build & Push CONFIG-SERVER to GCR
-        working-directory: ${{ github.workspace }}/config-server
+      # Build and push Docker image: cyna-api-gateway
+      - name: Build and push Docker image cyna-api-gateway
         run: |
-          set -euxo pipefail
-          echo "📂 Working directory: $(pwd)"
-          # Vérifier que Dockerfile est bien là
-          echo "📁 Contenu du dossier config-server :"
-          ls -R .
+          docker build \
+            -t gcr.io/${{ env.GCP_PROJECT }}/cyna-api-gateway:latest \
+            ./api-gateway
+          docker push gcr.io/${{ env.GCP_PROJECT }}/cyna-api-gateway:latest
 
-          echo "--- Docker build CONFIG-SERVER (progress plain) ---"
-          docker build --progress=plain -t cyna-config-server:latest . 2>&1 | tee build-config-server.log
-
-          echo "--- Docker tag → ${GCR_HOSTNAME}/${GCP_PROJECT_ID}/cyna-config-server:latest ---"
-          docker tag cyna-config-server:latest \
-            ${GCR_HOSTNAME}/${GCP_PROJECT_ID}/cyna-config-server:latest
-
-          echo "--- Docker push → ${GCR_HOSTNAME}/${GCP_PROJECT_ID}/cyna-config-server:latest ---"
-          docker push ${GCR_HOSTNAME}/${GCP_PROJECT_ID}/cyna-config-server:latest 2>&1 | tee push-config-server.log
-
-      ########################################################################
-      # 10. Construire + Pousser EUREKA-SERVER
-      ########################################################################
-      - name: 🐳 Build & Push EUREKA-SERVER to GCR
-        working-directory: ${{ github.workspace }}/eureka-server
+      # Build and push Docker image: cyna-auth-users
+      - name: Build and push Docker image cyna-auth-users
         run: |
-          set -euxo pipefail
-          echo "📂 Working directory: $(pwd)"
-          echo "📁 Contenu du dossier eureka-server :"
-          ls -R .
+          docker build \
+            -t gcr.io/${{ env.GCP_PROJECT }}/cyna-auth-users:latest \
+            ./auth-users
+          docker push gcr.io/${{ env.GCP_PROJECT }}/cyna-auth-users:latest
 
-          echo "--- Docker build EUREKA-SERVER (progress plain) ---"
-          docker build --progress=plain -t cyna-eureka-server:latest . 2>&1 | tee build-eureka-server.log
-
-          echo "--- Docker tag → ${GCR_HOSTNAME}/${GCP_PROJECT_ID}/cyna-eureka-server:latest ---"
-          docker tag cyna-eureka-server:latest \
-            ${GCR_HOSTNAME}/${GCP_PROJECT_ID}/cyna-eureka-server:latest
-
-          echo "--- Docker push → ${GCR_HOSTNAME}/${GCP_PROJECT_ID}/cyna-eureka-server:latest ---"
-          docker push ${GCR_HOSTNAME}/${GCP_PROJECT_ID}/cyna-eureka-server:latest 2>&1 | tee push-eureka-server.log
-
-      ########################################################################
-      # 11. Construire + Pousser API-GATEWAY
-      ########################################################################
-      - name: 🐳 Build & Push API-GATEWAY to GCR
-        working-directory: ${{ github.workspace }}/api-gateway
+      # Build and push Docker image: cyna-products
+      - name: Build and push Docker image cyna-products
         run: |
-          set -euxo pipefail
-          echo "📂 Working directory: $(pwd)"
-          echo "📁 Contenu du dossier api-gateway :"
-          ls -R .
+          docker build \
+            -t gcr.io/${{ env.GCP_PROJECT }}/cyna-products:latest \
+            ./products
+          docker push gcr.io/${{ env.GCP_PROJECT }}/cyna-products:latest
 
-          echo "--- Docker build API-GATEWAY (progress plain) ---"
-          docker build --progress=plain -t cyna-api-gateway:latest . 2>&1 | tee build-api-gateway.log
-
-          echo "--- Docker tag → ${GCR_HOSTNAME}/${GCP_PROJECT_ID}/cyna-api-gateway:latest ---"
-          docker tag cyna-api-gateway:latest \
-            ${GCR_HOSTNAME}/${GCP_PROJECT_ID}/cyna-api-gateway:latest
-
-          echo "--- Docker push → ${GCR_HOSTNAME}/${GCP_PROJECT_ID}/cyna-api-gateway:latest ---"
-          docker push ${GCR_HOSTNAME}/${GCP_PROJECT_ID}/cyna-api-gateway:latest 2>&1 | tee push-api-gateway.log
-
-      ########################################################################
-      # 12. Construire + Pousser AUTH-USERS
-      ########################################################################
-      - name: 🐳 Build & Push AUTH-USERS to GCR
-        working-directory: ${{ github.workspace }}/auth-users
+      # Build and push Docker image: cyna-subscriptions
+      - name: Build and push Docker image cyna-subscriptions
         run: |
-          set -euxo pipefail
-          echo "📂 Working directory: $(pwd)"
-          echo "📁 Contenu du dossier auth-users :"
-          ls -R .
-
-          echo "--- Docker build AUTH-USERS (progress plain) ---"
-          docker build --progress=plain -t cyna-auth-users:latest . 2>&1 | tee build-auth-users.log
-
-          echo "--- Docker tag → ${GCR_HOSTNAME}/${GCP_PROJECT_ID}/cyna-auth-users:latest ---"
-          docker tag cyna-auth-users:latest \
-            ${GCR_HOSTNAME}/${GCP_PROJECT_ID}/cyna-auth-users:latest
-
-          echo "--- Docker push → ${GCR_HOSTNAME}/${GCP_PROJECT_ID}/cyna-auth-users:latest ---"
-          docker push ${GCR_HOSTNAME}/${GCP_PROJECT_ID}/cyna-auth-users:latest 2>&1 | tee push-auth-users.log
-
-      ########################################################################
-      # 13. Construire + Pousser PRODUCTS
-      ########################################################################
-      - name: 🐳 Build & Push PRODUCTS to GCR
-        working-directory: ${{ github.workspace }}/products
-        run: |
-          set -euxo pipefail
-          echo "📂 Working directory: $(pwd)"
-          echo "📁 Contenu du dossier products :"
-          ls -R .
-
-          echo "--- Docker build PRODUCTS (progress plain) ---"
-          docker build --progress=plain -t cyna-products:latest . 2>&1 | tee build-products.log
-
-          echo "--- Docker tag → ${GCR_HOSTNAME}/${GCP_PROJECT_ID}/cyna-products:latest ---"
-          docker tag cyna-products:latest \
-            ${GCR_HOSTNAME}/${GCP_PROJECT_ID}/cyna-products:latest
-
-          echo "--- Docker push → ${GCR_HOSTNAME}/${GCP_PROJECT_ID}/cyna-products:latest ---"
-          docker push ${GCR_HOSTNAME}/${GCP_PROJECT_ID}/cyna-products:latest 2>&1 | tee push-products.log
-
-      ########################################################################
-      # 14. Construire + Pousser SUBSCRIPTIONS
-      ########################################################################
-      - name: 🐳 Build & Push SUBSCRIPTIONS to GCR
-        working-directory: ${{ github.workspace }}/subscriptions
-        run: |
-          set -euxo pipefail
-          echo "📂 Working directory: $(pwd)"
-          echo "📁 Contenu du dossier subscriptions :"
-          ls -R .
-
-          echo "--- Docker build SUBSCRIPTIONS (progress plain) ---"
-          docker build --progress=plain -t cyna-subscriptions:latest . 2>&1 | tee build-subscriptions.log
-
-          echo "--- Docker tag → ${GCR_HOSTNAME}/${GCP_PROJECT_ID}/cyna-subscriptions:latest ---"
-          docker tag cyna-subscriptions:latest \
-            ${GCR_HOSTNAME}/${GCP_PROJECT_ID}/cyna-subscriptions:latest
-
-          echo "--- Docker push → ${GCR_HOSTNAME}/${GCP_PROJECT_ID}/cyna-subscriptions:latest ---"
-          docker push ${GCR_HOSTNAME}/${GCP_PROJECT_ID}/cyna-subscriptions:latest 2>&1 | tee push-subscriptions.log
-
-      ########################################################################
-      # 15. (Optionnel) Afficher un message de fin
-      ########################################################################
-      - name: 🚀 All Docker steps completed (Debug Mode)
-        run: |
-          set -euxo pipefail
-          echo "✔ Toutes les étapes Docker (build + push) se sont terminées avec succès."
+          docker build \
+            -t gcr.io/${{ env.GCP_PROJECT }}/cyna-subscriptions:latest \
+            ./subscriptions
+          docker push gcr.io/${{ env.GCP_PROJECT }}/cyna-subscriptions:latest
