@@ -82,13 +82,13 @@ jobs:
           echo "Auth Token?    = '${{ steps.auth.outputs.auth_token }}' (si vide, c’est un problème)"
 
       ########################################################################
-      # 7. Installer Java 11 (nécessaire si vos microservices utilisent Maven)
+      # 7. Installer Java 23 (au lieu de Java 11)
       ########################################################################
-      - name: ☕️ Setup Java 11 (Maven/Gradle)
+      - name: ☕️ Setup Java 23 (Maven/Gradle)
         uses: actions/setup-java@v3
         with:
           distribution: temurin
-          java-version: "11"
+          java-version: "23"
 
       ########################################################################
       # 8. Build & Run Tests pour chaque microservice (si vous avez des tests
@@ -228,19 +228,4 @@ jobs:
           ls -R .
 
           echo "--- Docker build SUBSCRIPTIONS (progress plain) ---"
-          docker build --progress=plain -t cyna-subscriptions:latest . 2>&1 | tee build-subscriptions.log
-
-          echo "--- Docker tag → ${GCR_HOSTNAME}/${GCP_PROJECT_ID}/cyna-subscriptions:latest ---"
-          docker tag cyna-subscriptions:latest \
-            ${GCR_HOSTNAME}/${GCP_PROJECT_ID}/cyna-subscriptions:latest
-
-          echo "--- Docker push → ${GCR_HOSTNAME}/${GCP_PROJECT_ID}/cyna-subscriptions:latest ---"
-          docker push ${GCR_HOSTNAME}/${GCP_PROJECT_ID}/cyna-subscriptions:latest 2>&1 | tee push-subscriptions.log
-
-      ########################################################################
-      # 15. (Optionnel) Afficher un message de fin
-      ########################################################################
-      - name: 🚀 All Docker steps completed (Debug Mode)
-        run: |
-          set -euxo pipefail
-          echo "✔ Toutes les étapes Docker (build + push) se sont terminées avec succès."
+          docker build --progress=plain -t cyna-sub
