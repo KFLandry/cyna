@@ -41,7 +41,7 @@ on:
 
 env:
   PROJECT_ID: 'smiling-spring-462009-t0' # TODO: update to your Google Cloud project ID
-  GAR_LOCATION: 'europe' # TODO: update to your region
+  GAR_LOCATION: 'europe-west1' # TODO: update to your region
   REPOSITORY: 'eu-images' # TODO: update to your Artifact Registry docker repository name
 
 jobs:
@@ -70,8 +70,7 @@ jobs:
           
       - name: Configure Docker for Artifact Registry
         run: |
-          gcloud auth configure-docker ${{ env.GAR_LOCATION }}-docker.pkg.dev \
-            --quiet
+          gcloud auth configure-docker ${{ env.GAR_LOCATION }}-docker.pkg.dev --quiet
 
       # Authenticate Docker to Google Cloud Artifact Registry
       - name: 'Docker Auth'
