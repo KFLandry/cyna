@@ -170,6 +170,7 @@ public class ProductService {
                     .productName(product.getName())
                     .amount(product.getAmount())
                     .description(product.getDescription())
+                    .pricingModel(product.getPricingModel())
                     .build();
 
             PriceDto result = restClientBuilder.build()
