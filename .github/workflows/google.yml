@@ -132,7 +132,7 @@ jobs:
       # Build the Docker image PRODUCTS
       - name: 'Build and push Docker container PRODUCTS'
         run: |-
-          DOCKER_TAG="${GAR_LOCATION}-docker.pkg.dev/${PROJECT_ID}/${REPOSITORY}/products:${GITHUB_SHA}"
+          DOCKER_TAG="${GAR_LOCATION}-docker.pkg.dev/${PROJECT_ID}/${REPOSITORY}/cyna-products:${GITHUB_SHA}"
 
           docker build \
             --tag "${DOCKER_TAG}" \
