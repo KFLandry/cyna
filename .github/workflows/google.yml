@@ -58,6 +58,12 @@ jobs:
       - name: 'Checkout'
         uses: 'actions/checkout@v4'
 
+      - name: Installer Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ env.PROJECT_ID }}
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+
       # Configure Workload Identity Federation and generate an access token.
       #
       # See https://github.com/google-github-actions/auth for more options,
@@ -67,7 +73,7 @@ jobs:
         uses: 'google-github-actions/auth@v2' # google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
-          
+
       # Authenticate Docker to Google Cloud Artifact Registry
       - name: 'Docker Auth'
         uses: 'docker/login-action@v3' # docker/login-action@v3
