@@ -76,9 +76,8 @@ jobs:
 
       - name: Docker login manuel
         run: |
-          TOKEN="${{ steps.auth.outputs.access_token }}"
-          echo $TOKEN | docker login $GAR_LOCATION-docker.pkg.dev \
-            -u oauth2accesstoken --password-stdin
+          TOKEN="${{ steps.auth.outputs.auth_token }}"
+          echo $TOKEN | docker login $GAR_LOCATION-docker.pkg.dev -u oauth2accesstoken --password-stdin
 
       # # Authenticate Docker to Google Cloud Artifact Registry
       # - name: 'Docker Auth'
