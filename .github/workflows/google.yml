@@ -68,6 +68,12 @@ jobs:
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
 
+      - name: 'Debug : afficher variables'
+        run: |
+          echo "GAR_LOCATION = $GAR_LOCATION"
+          echo "Registry URL = $GAR_LOCATION-docker.pkg.dev"
+          echo "Access token (début) = ${{ steps.auth.outputs.auth_token }}  ${{ steps.auth.outputs.access_token }} "
+
       # Authenticate Docker to Google Cloud Artifact Registry
       - name: 'Docker Auth'
         uses: 'docker/login-action@v3' # docker/login-action@v3
