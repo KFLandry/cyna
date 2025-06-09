@@ -35,8 +35,9 @@ name: 'Build and publish on artifact registry'
 
 on:
   push:
-    branches:
-      - '"main"'
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
 
 env:
   PROJECT_ID: 'smiling-spring-462009-t0' # TODO: update to your Google Cloud project ID
