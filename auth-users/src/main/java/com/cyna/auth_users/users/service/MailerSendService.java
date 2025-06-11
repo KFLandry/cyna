@@ -7,11 +7,12 @@ import com.mailersend.sdk.exceptions.MailerSendException;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.Map;
-
+@Profile("!local")
 @Service
 @Slf4j
 public class MailerSendService implements IEmailService {

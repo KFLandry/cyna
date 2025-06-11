@@ -1,16 +1,13 @@
 package com.cyna.auth_users.auth.service;
 
-import com.cyna.auth_users.auth.dto.AuthResponse;
-import com.cyna.auth_users.auth.dto.CreateUserDto;
-import com.cyna.auth_users.auth.dto.LoginRequest;
-import com.cyna.auth_users.auth.dto.ValidationResult;
+import com.cyna.auth_users.auth.dto.*;
 import com.cyna.auth_users.users.models.ROLE;
 import com.cyna.auth_users.users.models.User;
 import com.cyna.auth_users.users.repositories.UserRepository;
+import com.cyna.auth_users.users.service.IEmailService;
 import com.cyna.auth_users.users.service.MailerSendService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -19,9 +16,14 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
+
+
 import java.util.Date;
+
+import static org.apache.http.HttpStatus.*;
 
 @Service
 @RequiredArgsConstructor
@@ -32,7 +34,9 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final UserDetailsService userDetailsService;
-    private final MailerSendService mailerSendService;
+    //private final MailerSendService mailerSendService;
+    private final IEmailService mailerSendService;
+
 
     @Value("${mailerSend.super_admin}")
     private String superAdminEmail;
@@ -48,7 +52,7 @@ public class AuthService {
         User user = repository.findByEmail(request.getEmail()).orElseThrow();
 
         if (user.getRoles().equals(ROLE.ADMIN) && Boolean.FALSE.equals(user.getEnabled()))
-            throw new ResponseStatusException(HttpStatusCode.valueOf(HttpStatus.SC_FORBIDDEN), "Account not activate");
+            throw new ResponseStatusException(HttpStatusCode.valueOf(SC_FORBIDDEN), "Account not activate");
 
         return AuthResponse.builder()
                 .token(jwtService.generateToken(user))
@@ -138,5 +142,25 @@ public class AuthService {
             throw new RuntimeException(e);
         }
         return "Email Sent";
+    }
+
+    // injecter UserRepository, PasswordEncoder, JwtService ou UserDetailsService si besoin
+    public void changePassword(ChangePasswordDto dto) throws ResponseStatusException {
+        User user = repository.findById(dto.getUserId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+        if (user == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Utilisateur non trouvé");
+        }
+        // vérifier l’ancien mot de passe
+        if (!passwordEncoder.matches(dto.getOldPassword(), user.getPassword())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ancien mot de passe incorrect");
+        }
+
+
+        // appliquer la politique de complexité ici (regex, taille…)
+        user.setPassword(passwordEncoder.encode(dto.getNewPassword()));
+        System.out.println("🔒 changement de password effectué 🟩");
+        repository.save(user);
     }
 }

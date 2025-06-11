@@ -39,7 +39,9 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper;
-    private final MailerSendService mailerSendService;
+    //private final MailerSendService mailerSendService;
+    private final IEmailService mailerSendService;
+
 
     public List<UserDto> getAll() {
         return userRepository.findAll().stream().map(userMapper::UserToUserDto).toList();

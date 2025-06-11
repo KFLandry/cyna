@@ -58,4 +58,11 @@ public class AuthController {
     public ResponseEntity<String> passwordForgot(@Valid @PathVariable("userId") long userId, @RequestBody UpdateUserDto user) {
         return ResponseEntity.ok(userService.update(userId, user));
     }
+
+    //
+    @PostMapping("/change-password")
+    public ResponseEntity<Void> changePassword(@RequestBody ChangePasswordDto dto) {
+        authService.changePassword(dto);
+        return ResponseEntity.noContent().build();
+    }
 }
