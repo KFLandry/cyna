@@ -1,11 +1,21 @@
+# Fichiers d'environnement
 .env
-HELP.md
+.env.*
+.local.*
+*.env
+*.local
+
+# Maven
 target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
 
-### STS ###
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
 .apt_generated
 .classpath
 .factorypath
@@ -13,14 +23,9 @@ target/
 .settings
 .springBeans
 .sts4-cache
+.vscode/
 
-### IntelliJ IDEA ###
-.idea
-*.iws
-*.iml
-*.ipr
-
-### NetBeans ###
+# NetBeans & build
 /nbproject/private/
 /nbbuild/
 /dist/
@@ -30,7 +35,5 @@ build/
 !**/src/main/**/build/
 !**/src/test/**/build/
 
-### VS Code ###
-.vscode/
-
-.env
+# Fichiers inutiles
+HELP.md
