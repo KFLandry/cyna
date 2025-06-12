@@ -4,6 +4,7 @@ import com.cyna.products.dto.CarouselDto;
 import com.cyna.products.dto.CarouselGetDto;
 import com.cyna.products.models.Carousel;
 import com.cyna.products.services.CarouselService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -28,12 +29,12 @@ public class CarouselController {
     }
 
     @PostMapping
-    public ResponseEntity<Carousel> create(@RequestBody CarouselDto carousel) {
+    public ResponseEntity<Carousel> create(@Valid @ModelAttribute CarouselDto carousel) {
         return ResponseEntity.ok(carouselService.create(carousel));
     }
 
     @PatchMapping
-    public ResponseEntity<Carousel> update(@RequestBody CarouselDto carousel) {
+    public ResponseEntity<Carousel> update(@ModelAttribute CarouselDto carousel) {
         return ResponseEntity.ok(carouselService.update(carousel));
     }
 

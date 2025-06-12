@@ -9,7 +9,7 @@
         <relativePath/>
     </parent>
     <groupId>com.cyna.eureka-server</groupId>
-    <artifactId>EurekaServer</artifactId>
+    <artifactId>eureka-server</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>EurekaServer</name>
     <description>EurekaServer</description>

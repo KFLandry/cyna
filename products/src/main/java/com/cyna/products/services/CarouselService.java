@@ -11,8 +11,6 @@ import com.cyna.products.repositories.ProductRepo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
@@ -40,10 +38,11 @@ public class CarouselService {
     public Carousel update(CarouselDto carousel) {
         Carousel updateCarousel = carouselRepo.findById(carousel.getId()).orElseThrow();
 
+        updateCarousel.setId(carousel.getId());
         updateCarousel.setTitle(Optional.ofNullable(carousel.getTitle()).orElse(updateCarousel.getTitle()));
         updateCarousel.setText(Optional.ofNullable(carousel.getText()).orElse(updateCarousel.getText()));
-        if (carousel.getImage() != null) {
-            Media image = (Media) mediaService.uploadFiles(new HashSet<>((Collection) carousel.getImage())).stream().findFirst().get();
+        if (!carousel.getImages().isEmpty()) {
+            Media image = mediaService.uploadFiles(carousel.getImages()).stream().findFirst().get();
             updateCarousel.setImageUrl(image.getUrl());
         }
         // Assuming that the product and category are optional, you can set them conditionally
@@ -61,16 +60,14 @@ public class CarouselService {
     }
 
     public Carousel create(CarouselDto carousel) {
-        Media image = (Media) mediaService.uploadFiles(new HashSet<>((Collection) carousel.getImage())).stream().findFirst().get();
+        Media image = mediaService.uploadFiles(carousel.getImages()).stream().findFirst().get();
 
         Carousel newCarousel = Carousel.builder()
                 .title(carousel.getTitle())
                 .text(carousel.getText())
                 .imageUrl(image.getUrl())
-                .product(productRepo.findById(carousel.getProductId())
-                        .orElseThrow(() -> new RuntimeException("Product not found")))
-                .category(categoryRepo.findById(carousel.getCategoryId())
-                        .orElseThrow(() -> new RuntimeException("Category not found")))
+                .product(carousel.getProductId() !=0 ? productRepo.findById(carousel.getProductId()).orElseThrow(() -> new RuntimeException("Product not found")) : null)
+                .category(carousel.getCategoryId() !=0 ? categoryRepo.findById(carousel.getCategoryId()).orElseThrow(() -> new RuntimeException("Category not found")) : null)
                 .build();
 
         return carouselRepo.save(newCarousel);

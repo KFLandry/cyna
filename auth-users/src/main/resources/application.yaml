@@ -1,10 +1,13 @@
 spring:
   application:
     name: auth-users
-  config:
-    import: configserver:${URL:CONFIG-SERVER:http://localhost:8888}
+
   profiles:
-    active: ${PROFILE:local}
+    active: local
+
+  cloud:
+    config:
+      enabled: false  # Désactive le config server pour le dev local
 
 endpoints:
   validate_email: ${FRONT_END_URL:http://localhost:8080}/api/v1/auth/validate-email
@@ -12,12 +15,12 @@ endpoints:
   password_forgot: ${FRONT_END_URL:http://localhost:8080}/api/v1/auth/password-forgot
 
 mailerSend:
-  from: ${MAIL_USERNAME}
-  support_email: ${SUPPORT_MAIL}
-  super_admin: ${SUPER_ADMIN}
-  token: ${API_TOKEN}
+  from: ${MAIL_USERNAME:demo@mail.com}
+  support_email: ${SUPPORT_MAIL:support@mail.com}
+  super_admin: ${SUPER_ADMIN:admin@mail.com}
+  token: ${API_TOKEN:defaultToken}
 
 templates:
-  generic_template: ${GENERIC_TEMPLATE}
-  generic_template_with_button: ${GENERIC_TEMPLATE_BUTTON}
-  email_verified: ${EMAIL_VERIFIED}
+  generic_template: ${GENERIC_TEMPLATE:GENERIC}
+  generic_template_with_button: ${GENERIC_TEMPLATE_BUTTON:GENERIC_BTN}
+  email_verified: ${EMAIL_VERIFIED:VERIFIED}
