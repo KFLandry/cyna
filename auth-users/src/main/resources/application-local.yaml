@@ -1,10 +1,36 @@
+spring:
+  application:
+    name: auth-users
+
+server:
+  port: 8081 # Assurez-vous que le port est bien défini sur 8081 ou un autre port libre
+
+static:
+  location: file:./images/
+
+directory:
+  images: ./images/
+
+
+
+recaptcha:
+  secret: 6LeIxAcTAAAAAGG-vByKK3EwQd-B4wJ4b3Q
+
+endpoints:
+  validate_email: ${FRONT_END_URL:http://localhost:8080}/api/v1/auth/validate-email
+  validate_account: ${FRONT_END_URL:http://localhost:8080}/api/v1/auth/validate-account
+  password_forgot: ${FRONT_END_URL:http://localhost:8080}/api/v1/auth/password-forgot
+
+jwt:
+  secret: 2NtYgNRjZACVKzWC9SkHxMnN0Lsjj8JQndCPjhhY9U1C5mL14dghS5XVJcL4uaMJNglWSRMjLJk+w1g7LklKDg==
+  expiration: 3600000
+
 mailerSend:
   from: ${MAIL_USERNAME:wilfried@trial-ywj2lpnqzo1g7oqz.mlsender.net}
   support_email: ${SUPPORT_MAIL:wilfried@trial-ywj2lpnqzo1g7oqz.mlsender.net}
   super_admin: ${SUPER_ADMIN:wilfrieddev0@gmail.com}
   token: ${API_TOKEN:mlsn.d9038881333ff79e651de3en84e23449400c2ef9e55a9195efeb16a7bc027d1286}
-
-templates:
-  generic_template: "3z0vklo86e147qrx"
-  generic_template_with_button: "jpzkmgq87o2g059v"
-  email_verified: "jy7zpl998erl5vx6"
+  templates:
+    generic_template: "3z0vklo86e147qrx"
+    generic_template_with_button: "jpzkmgq87o2g059v"
+    email_verified: "jy7zpl998erl5vx6"

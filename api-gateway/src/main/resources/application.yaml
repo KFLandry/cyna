@@ -5,3 +5,112 @@ spring:
     import: configserver:${URL-CONFIG-SERVER:http://localhost:8888}
   profiles:
     active: ${PROFILE:local}
+---
+local:
+server:
+  port: 8080
+
+spring:
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lowerCaseServiceId: true
+      routes:
+        - id: auth-users
+          uri: lb://auth-users
+          predicates:
+            - Path=/api/v1/auth/**
+            # Ajoutez le chemin pour la documentation OpenAPI du service Auth-Users
+            - Path=/auth-users/v3/api-docs/** # Important : C'est le chemin du Gateway pour la doc
+          filters:
+            # Si /auth-users/v3/api-docs doit être réécrit, ajoutez-le ici
+            - RewritePath=/auth-users/(?<segment>.*), /${segment}
+
+        - id: user-service
+          uri: lb://auth-users # Attention : Si user-service est un service distinct, son URI devrait être lb://user-service
+          predicates:
+            - Path=/api/v1/user/**,/auth-users/**
+            # Si user-service expose aussi une API docs via le Gateway
+            - Path=/user-service/v3/api-docs/** # Exemple, si user-service est bien séparé
+          filters:
+            - name: JwtAuth
+            - RewritePath=/user-service/(?<segment>.*), /${segment} # Exemple de réécriture
+
+        - id: products
+          uri: lb://products
+          predicates:
+            - Path=/api/v1/products/**,/api/v1/categories/**,/products/**
+            # Ajoutez le chemin pour la documentation OpenAPI du service Products
+            - Path=/products/v3/api-docs/** # Important : C'est le chemin du Gateway pour la doc
+          filters:
+            - RewritePath=/products/(?<segment>.*), /${segment} # Rewrite si nécessaire
+
+        - id: orders
+          uri: lb://orders
+          predicates:
+            - Path=/api/v1/orders/**,/orders/**
+            # Ajoutez le chemin pour la documentation OpenAPI du service Orders
+            - Path=/orders/v3/api-docs/** # Important : C'est le chemin du Gateway pour la doc
+          filters:
+            - name: JwtAuth
+            - RewritePath=/orders/(?<segment>.*), /${segment} # Rewrite si nécessaire
+
+        - id: sav
+          uri: lb://sav
+          predicates:
+            - Path=/api/v1/sav/**, /sav/**
+            # Ajoutez le chemin pour la documentation OpenAPI du service SAV
+            - Path=/sav/v3/api-docs/** # Important : C'est le chemin du Gateway pour la doc
+          filters:
+            - RewritePath=/sav/(?<segment>.*), /${segment} # Rewrite si nécessaire
+
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    hostname: localhost
+    preferIpAddress: false
+    instance-id: ${spring.application.name}:${random.value}
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
+    org.springframework.cloud.netflix: DEBUG
+
+  file:
+    name: ./target/api-gateway.log
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs # Chemin par défaut pour l'agrégation, généralement /v3/api-docs
+    # groups:
+    #   enabled: true # Activer les groupes si vous voulez des docs séparées pour chaque service
+
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+    urls:
+      # L'URL pour le Gateway lui-même (si le Gateway expose des endpoints)
+      - name: gateway-service
+        url: /v3/api-docs # Le Gateway expose sa propre doc ici
+      # L'URL pour le service Auth-Users via le Gateway
+      - name: auth-users
+        url: /auth-users/v3/api-docs # Doit correspondre au Path dans la route du Gateway
+      # L'URL pour le service Products via le Gateway
+      - name: products
+        url: /products/v3/api-docs # Doit correspondre au Path dans la route du Gateway
+      # Ajoutez les autres services ici, suivant le même modèle
+      - name: orders
+        url: /orders/v3/api-docs
+      - name: sav
+        url: /sav/v3/api-docs
+      # Vérifiez l'ID de service pour user-service et son chemin API-docs
+      # Si 'user-service' est un service distinct d'Auth-Users dans Eureka
+      - name: user-service # Assurez-vous que c'est bien l'ID Eureka de ce service
+        url: /user-service/v3/api-docs # Doit correspondre à la route du Gateway pour user-service
+    urls-primary-name: gateway-service # Le service affiché par défaut à l'ouverture de Swagger UI

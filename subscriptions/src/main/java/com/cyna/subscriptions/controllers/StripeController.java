@@ -56,9 +56,33 @@ public class StripeController {
         return ResponseEntity.ok(stripeService.createCustomer(customerDto));
     }
 
+    /*Stripe*/
     @PostMapping("/payment-method")
-    public ResponseEntity<String> addPaymentMethod(@RequestBody PaymentMethodDto paymentMethodDto) {
-        return ResponseEntity.ok(stripeService.addPaymentMethod(paymentMethodDto));
+    public ResponseEntity<String> addPaymentMethod(@RequestBody PaymentMethodDto dto) {
+         stripeService.attachPaymentMethod(dto);
+        return ResponseEntity.ok("PaymentMethod attached");
+        }
+
+    @GetMapping("/payment-methods")
+    public ResponseEntity<List<PaymentMethodResponseDto>> listPaymentMethods(
+            @RequestParam("customerId") String customerId) {
+        List<PaymentMethodResponseDto> methods = stripeService.listPaymentMethods(customerId);
+        return ResponseEntity.ok(methods);
+    }
+
+    @DeleteMapping("/payment-methods/{id}")
+    public ResponseEntity<String> deletePaymentMethod(@PathVariable(value = "id") String id) {
+            stripeService.detachPaymentMethod(id);
+            //204 No content si tout est ok
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/payment-methods/{id}/default")
+    public ResponseEntity<Void> setDefaultPaymentMethod(
+            @PathVariable("id") String pmId,
+            @RequestParam("customerId") String customerId) {
+        stripeService.setDefaultPaymentMethod(pmId, customerId);
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/create-price")

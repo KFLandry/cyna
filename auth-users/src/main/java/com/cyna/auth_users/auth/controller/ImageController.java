@@ -1,4 +1,4 @@
-package com.cyna.users.controller;
+package com.cyna.auth_users.controller; // NOUVEAU PACKAGE OU CHOISISSEZ UN EXISTANT COMME users.controllers
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
@@ -18,14 +18,15 @@ import java.nio.file.Paths;
 public class ImageController {
 
     @Value("${directory.images}") // Utilise la même propriété que dans UserService pour le chemin physique
-    private String imagesDirectory; // ex: "./uploads/" ou "./images/"
+    private String imagesDirectory; // ex: "./uploads/" ou "./images/" ou C:/...
 
     @GetMapping("/api/v1/user/avatar/{filename}") // C'est cette URL que le frontend va appeler
     public ResponseEntity<Resource> serveAvatar(@PathVariable String filename) {
         try {
             // IMPORTANT : Nettoyer le filename pour éviter les attaques de traversée de répertoire (ex: ../../etc/passwd)
-            // normalize() aide, mais une validation supplémentaire pourrait être ajoutée
-            String safeFilename = filename.replaceAll("[^a-zA-Z0-9.\\-]", ""); // Garde seulement les caractères sûrs
+            // Cela simplifie la chaîne de caractères et la rend plus sûre pour construire le chemin.
+            // Un filename généré par UUID est déjà sûr, mais cette précaution ne fait pas de mal.
+            String safeFilename = filename.replaceAll("[^a-zA-Z0-9.\\-]", "");
 
             // Construisez le chemin complet du fichier sur le système de fichiers du serveur
             Path filePath = Paths.get(imagesDirectory).resolve(safeFilename).normalize();

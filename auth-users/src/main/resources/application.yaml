@@ -1,14 +1,17 @@
 spring:
   application:
     name: auth-users
-
   profiles:
     active: local
-
   cloud:
     config:
-      enabled: false  # Désactive le config server pour le dev local
+      enabled: false
 
+# Ajoutez cette section
+directory:
+  #images: ${IMAGES_DIRECTORY:./uploads/images}  # Chemin par défaut vers le dossier des images
+  #images: C:/Users/zodia/OneDrive/Bureau/Cyna/images
+  images : ./images/
 endpoints:
   validate_email: ${FRONT_END_URL:http://localhost:8080}/api/v1/auth/validate-email
   validate_account: ${FRONT_END_URL:http://localhost:8080}/api/v1/auth/validate-account

@@ -18,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
@@ -31,6 +32,14 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+
+import com.stripe.exception.StripeException;
+import com.stripe.model.Customer;
+import com.stripe.model.PaymentMethod;
+import com.stripe.model.PaymentMethodCollection;
+import com.stripe.param.PaymentMethodListParams;
+
 
 @Service
 @RequiredArgsConstructor
@@ -74,7 +83,7 @@ public class StripeService {
             Customer customer = Customer.create(params);
 
             // MAJ du champ customerId dans la table User
-            UserDto userDto =  UserDto.builder()
+            UserDto userDto = UserDto.builder()
                     .id(customerDto.getUserId())
                     .customerId(customer.getId()).build();
             this.updateUser(userDto);
@@ -194,10 +203,10 @@ public class StripeService {
                 processInvoiceFinalized((Invoice) stripeObject);
                 break;
             case "customer.deleted":
-                processCustomerDeleted( (Customer) stripeObject);
+                processCustomerDeleted((Customer) stripeObject);
                 break;
             case "customer.updated":
-                processCustomerUpdated((Customer)stripeObject );
+                processCustomerUpdated((Customer) stripeObject);
                 break;
             case "customer.subscription.canceled":
                 processSubscriptionCanceled((Subscription) stripeObject);
@@ -226,8 +235,8 @@ public class StripeService {
     }
 
     private void processCustomerUpdated(Customer customer) {
-        Address address =  customer.getAddress();
-        AddressDto addressDto =  AddressDto.builder()
+        Address address = customer.getAddress();
+        AddressDto addressDto = AddressDto.builder()
                 .customer_Id(customer.getId())
                 .name(address.getLine1())
                 .city(address.getCity())
@@ -235,7 +244,7 @@ public class StripeService {
                 .postcode(address.getPostalCode())
                 .build();
 
-        String tokenRelayed =  this.getTokenRelay();
+        String tokenRelayed = this.getTokenRelay();
         if (tokenRelayed != null && tokenRelayed.startsWith("Bearer ")) {
             String result = restClientBuilder.build()
                     .patch()
@@ -253,7 +262,7 @@ public class StripeService {
 
     private void processCustomerDeleted(Customer customer) {
         // On ne supprime pas complete l'user, mais on defini son customerId à NULL
-        UserDto userDto =  UserDto.builder()
+        UserDto userDto = UserDto.builder()
                 .customerId(null)
                 .build();
         this.updateUser(userDto);
@@ -369,7 +378,7 @@ public class StripeService {
         }
     }
 
-    public void updateUser(UserDto userDto){
+    public void updateUser(UserDto userDto) {
         try {
             // Récupération de la requête entrante via RequestContextHolder
             String authHeader = this.getTokenRelay();
@@ -377,7 +386,7 @@ public class StripeService {
             if (authHeader != null && authHeader.startsWith("Bearer ")) {
                 String result = restClientBuilder.build()
                         .patch()
-                        .uri(this.getServiceURI(AUTH_USERS_ID) + "/api/v1/user/"+userDto.getId())
+                        .uri(this.getServiceURI(AUTH_USERS_ID) + "/api/v1/user/" + userDto.getId())
                         .header(HttpHeaders.AUTHORIZATION, authHeader)
                         .body(userDto)
                         .retrieve()
@@ -390,7 +399,7 @@ public class StripeService {
         }
     }
 
-    public URI getServiceURI(String serviceId){
+    public URI getServiceURI(String serviceId) {
         List<ServiceInstance> instances = discoveryClient.getInstances(serviceId);
         if (instances.isEmpty()) {
             log.error("No instances found for service: {}", serviceId);
@@ -403,45 +412,11 @@ public class StripeService {
         return serviceInstance.getUri();
     }
 
-    public String getTokenRelay(){
+    public String getTokenRelay() {
         ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         if (attributes != null) {
             HttpServletRequest currentRequest = attributes.getRequest();
             return currentRequest.getHeader(HttpHeaders.AUTHORIZATION);
-        }
-        return null;
-    }
-
-    public String addPaymentMethod(PaymentMethodDto paymentMethodDto) {
-
-        PaymentMethodCreateParams params = PaymentMethodCreateParams.builder()
-                .setType(PaymentMethodCreateParams.Type.valueOf(paymentMethodDto.getType()))
-                .setCard(
-                        PaymentMethodCreateParams.CardDetails.builder()
-                                .setNumber(String.valueOf(paymentMethodDto.getNumber()))
-                                .setExpMonth(paymentMethodDto.getMonth())
-                                .setExpYear(paymentMethodDto.getYear())
-                                .setCvc(String.valueOf(paymentMethodDto.getCvc()))
-                                .build()
-                )
-                .build();
-        try {
-            PaymentMethod paymentMethod = PaymentMethod.create(params);
-            // Mettre à jour le client pour définir cette PaymentMethod par défaut pour la facturation
-            CustomerUpdateParams.InvoiceSettings invoiceSettings = CustomerUpdateParams.InvoiceSettings.builder()
-                    .setDefaultPaymentMethod(paymentMethod.getId())
-                    .build();
-
-            CustomerUpdateParams updateParams = CustomerUpdateParams.builder()
-                    .setInvoiceSettings(invoiceSettings)
-                    .build();
-
-            Customer customer = Customer.retrieve(paymentMethodDto.getCustomerId());
-            customer.update(updateParams);
-
-        } catch (StripeException e) {
-            log.error("[StripeService][addMethodPayment] Error while adding a payment method to customerID : {}", paymentMethodDto.getCustomerId(), e);
-            throw new ResponseStatusException(HttpStatusCode.valueOf(400), e.getStripeError().getMessage());
         }
         return null;
     }
@@ -457,6 +432,111 @@ public class StripeService {
         } catch (StripeException e) {
             log.error("[StripeService][getEphemeralKey] Error while creating ephemeral key for customerID : {}", customerId, e);
             throw new ResponseStatusException(HttpStatusCode.valueOf(400), e.getStripeError().getMessage());
+        }
+    }
+
+    /*Stripe method*/
+    public void attachPaymentMethod(PaymentMethodDto dto) {
+        if (dto.getCustomerId() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "customerId is required");
+        }
+        try {
+            // 1) Récupérer le PaymentMethod
+            PaymentMethod pm = PaymentMethod.retrieve(dto.getPaymentMethodId());
+
+            // 2) Attacher au customer
+            pm = pm.attach(
+                    PaymentMethodAttachParams.builder()
+                            .setCustomer(dto.getCustomerId())
+                            .build()
+            );
+
+            // 3) Mettre à jour les invoice_settings du customer
+            Customer customer = Customer.retrieve(dto.getCustomerId());
+            CustomerUpdateParams params = CustomerUpdateParams.builder()
+                    .setInvoiceSettings(
+                            CustomerUpdateParams.InvoiceSettings.builder()
+                                    .setDefaultPaymentMethod(pm.getId())
+                                    .build()
+                    )
+                    .build();
+            customer.update(params);
+
+        } catch (StripeException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getStripeError().getMessage());
+        }
+    }
+
+    /**
+     * Liste toutes les méthodes de paiement d'un customer Stripe.
+     * @param customerId l'ID Stripe du customer
+     */
+    public List<PaymentMethodResponseDto> listPaymentMethods(String customerId) {
+        try {
+            // Récupération des PM Stripe
+            PaymentMethodListParams params = PaymentMethodListParams.builder()
+                    .setCustomer(customerId)
+                    .setType(PaymentMethodListParams.Type.CARD)
+                    .build();
+            PaymentMethodCollection pms = PaymentMethod.list(params);
+
+            // Customer pour default
+            Customer customer = Customer.retrieve(customerId);
+            String defaultPm = customer.getInvoiceSettings().getDefaultPaymentMethod();
+
+            // Mapping
+            return pms.getData().stream()
+                    .map(pm -> PaymentMethodResponseDto.builder()
+                            .id(pm.getId())
+                            .last4(pm.getCard().getLast4())
+                            .expiryMonth(pm.getCard().getExpMonth().intValue())
+                            .expiryYear(pm.getCard().getExpYear().intValue())
+                            .type(pm.getCard().getBrand())
+                            .cardholderName(pm.getBillingDetails().getName())
+                            .isDefault(pm.getId().equals(defaultPm))
+                            .build()
+                    )
+                    .collect(Collectors.toList());
+        } catch (StripeException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), e);
+        }
+
+    }
+
+    public void detachPaymentMethod(String paymentMethodId) {
+        try {
+            //1.Récupérer la PM
+            PaymentMethod pm = PaymentMethod.retrieve(paymentMethodId);
+
+            //2. Détacher la PM du customer
+            pm.detach();
+
+
+        } catch (StripeException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), e);
+        }
+    }
+
+    public void setDefaultPaymentMethod(String paymentMethodId, String customerId) {
+        try {
+            // 1) Attacher éventuellement la PM si ce n’est pas déjà fait
+            PaymentMethod pm = PaymentMethod.retrieve(paymentMethodId);
+            pm.attach(PaymentMethodAttachParams.builder()
+                    .setCustomer(customerId)
+                    .build()
+            );
+            // 2) Mettre à jour invoice_settings
+            Customer customer = Customer.retrieve(customerId);
+            customer.update(CustomerUpdateParams.builder()
+                    .setInvoiceSettings(
+                            CustomerUpdateParams.InvoiceSettings.builder()
+                                    .setDefaultPaymentMethod(paymentMethodId)
+                                    .build()
+                    )
+                    .build()
+            );
+        } catch (StripeException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), e);
         }
     }
 }
