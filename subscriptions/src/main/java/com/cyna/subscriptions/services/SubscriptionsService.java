@@ -36,7 +36,6 @@ public class SubscriptionsService {
     public String delete(long id){
 
         try {
-            //We cancel a subcription at the end of preiod
 
             com.stripe.model.Subscription subscription = com.stripe.model.Subscription.retrieve(Objects.requireNonNull(subscriptionRepo.findById(id).orElse(null)).getSubscriptionId());
             subscription.getCancelAtPeriodEnd();

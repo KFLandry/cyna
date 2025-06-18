@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -41,14 +42,26 @@ public class StripeController {
         return ResponseEntity.ok(subscriptionsService.findAll());
     }
 
+
     @GetMapping({"/{id}"})
     public ResponseEntity<Subscription> getSubscriptionById(@PathVariable(value = "id") long id){
         return ResponseEntity.ok(subscriptionsService.findById(id));
     }
 
+
+    // appelle StripeService pour interroger Stripe, et non plis le subscriptionsService (DB locale)
     @GetMapping(params = "customerId")
-    public ResponseEntity<List<Subscription>> getSubscriptionByCustomerId(@RequestParam("customerId") String customerId){
-        return ResponseEntity.ok(subscriptionsService.findByCustomerId(customerId));
+    public ResponseEntity<List<SubscriptionDto>> getSubscriptionByCustomerId(@RequestParam("customerId") String customerId){
+        // Nouvelle implémentation : appeler le StripeService pour récupérer depuis Stripe
+        // Note: Le type de retour est maintenant List<SubscriptionDto> car mapStripeSubscriptionToDto renvoie des SubscriptionDto
+        List<SubscriptionDto> subscriptionsFromStripe = stripeService.listSubscriptionsByCustomer(customerId);
+
+        if (subscriptionsFromStripe.isEmpty()) {
+            System.out.println("Aucun abonnement trouvé pour le client ID : " + customerId + " via Stripe.");
+            return ResponseEntity.ok(Collections.emptyList());
+        }
+        System.out.println("Abonnements trouvés pour le client ID " + customerId + " via Stripe : " + subscriptionsFromStripe.size());
+        return ResponseEntity.ok(subscriptionsFromStripe);
     }
 
     @PostMapping("/create-customer")

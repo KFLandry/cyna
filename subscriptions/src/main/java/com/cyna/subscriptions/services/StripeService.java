@@ -106,6 +106,7 @@ public class StripeService {
                             .putMetadata("productId", priceDto.getProductId())
                             .build())
                     .build();
+
             case PER_MONTH_PER_DEVICE, PER_MONTH_PER_USER -> PriceCreateParams.builder()
                     .setCurrency(priceDto.getCurrency())
                     .setUnitAmount(priceDto.getAmount())
@@ -117,6 +118,7 @@ public class StripeService {
                             .putMetadata("productId", priceDto.getProductId())
                             .build())
                     .build();
+
             case PER_YEAR_PER_DEVICE, PER_YEAR_PER_USER -> PriceCreateParams.builder()
                     .setCurrency(priceDto.getCurrency())
                     .setUnitAmount(priceDto.getAmount())
@@ -128,18 +130,39 @@ public class StripeService {
                             .putMetadata("productId", priceDto.getProductId())
                             .build())
                     .build();
-            default ->
-                    throw new ResponseStatusException(HttpStatusCode.valueOf(400), "Unsupported pricing model: " + priceDto.getPricingModel());
+
+            case PAY_AS_YOU_GO -> PriceCreateParams.builder()
+                    .setCurrency(priceDto.getCurrency())
+                    .setUnitAmount(priceDto.getAmount())
+                    .setRecurring(PriceCreateParams.Recurring.builder()
+                            .setInterval(PriceCreateParams.Recurring.Interval.MONTH)
+                            .setUsageType(PriceCreateParams.Recurring.UsageType.METERED)
+                            .build())
+                    .setProductData(PriceCreateParams.ProductData.builder()
+                            .setName(priceDto.getProductName())
+                            .putMetadata("productId", priceDto.getProductId())
+                            .build())
+                    .build();
+
+
+            default -> throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Unsupported pricing model: " + priceDto.getPricingModel()
+            );
         };
 
         try {
-            Price price = Price.create(params);
-            priceDto.setPriceId(price.getId());
+            Price stripePrice = Price.create(params);
+            priceDto.setPriceId(stripePrice.getId());
             return priceDto;
         } catch (StripeException e) {
-            throw new ResponseStatusException(HttpStatusCode.valueOf(400), e.getStripeError().getMessage());
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    e.getStripeError().getMessage()
+            );
         }
     }
+
 
     public String createSubscription(SubscriptionDto subscriptionDto) {
         // On fait bien attention de mettre le comportement de paiement à DEFAULT_INCOMPLETE
@@ -538,5 +561,71 @@ public class StripeService {
         } catch (StripeException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), e);
         }
+    }
+
+    /**
+     * Récupère la liste des abonnements Stripe pour un customerId donné.
+     * @param customerId l'ID Stripe du customer
+     * @return une liste de SubscriptionDto représentant les abonnements du client
+     */
+    public List<SubscriptionDto> listSubscriptionsByCustomer(String customerId) {
+        try {
+            SubscriptionListParams params = SubscriptionListParams.builder()
+                    .setCustomer(customerId)
+                    .setStatus(SubscriptionListParams.Status.ACTIVE) // Optionnel: ne récupérer que les abonnements actifs
+                    .build();
+
+            SubscriptionCollection subscriptions = Subscription.list(params);
+
+            // Mapper les objets Stripe Subscription en SubscriptionDto
+            return subscriptions.getData().stream()
+                    .map(this::mapStripeSubscriptionToDto)
+                    .collect(Collectors.toList());
+
+        } catch (StripeException e) {
+            log.error("[StripeService][listSubscriptionsByCustomer] Erreur lors de la récupération des abonnements pour le client {}: {}", customerId, e.getMessage());
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getStripeError().getMessage(), e);
+        }
+    }
+
+    /**
+     * Méthode utilitaire pour mapper un objet Stripe Subscription à un SubscriptionDto.
+     * @param stripeSubscription l'objet Subscription de Stripe
+     * @return un SubscriptionDto
+     */
+    private SubscriptionDto mapStripeSubscriptionToDto(Subscription stripeSubscription) {
+
+        Long amount = null;
+        String productName = null;
+        String pricingModel = null;
+        String priceId = null;
+
+        if (stripeSubscription.getItems() != null && !stripeSubscription.getItems().getData().isEmpty()) {
+            SubscriptionItem subscriptionItem = stripeSubscription.getItems().getData().getFirst();
+            if (subscriptionItem.getPrice() != null) {
+                Price price = subscriptionItem.getPrice();
+                amount = price.getUnitAmount();
+                priceId = price.getId();
+
+                try {
+                    Product product = Product.retrieve(price.getProduct());
+                    productName = product.getName();
+                    pricingModel = product.getMetadata().get("pricingModel");
+                } catch (StripeException e) {
+                    log.warn("Impossible de récupérer les détails du produit pour le prix {}: {}", price.getId(), e.getMessage());
+                }
+            }
+        }
+
+        return SubscriptionDto.builder()
+                .subscriptionId(stripeSubscription.getId())
+                .customerId(stripeSubscription.getCustomer())
+                .priceId(priceId)
+                .status(stripeSubscription.getStatus())
+                .quantity(stripeSubscription.getItems().getData().isEmpty() ? null : stripeSubscription.getItems().getData().getFirst().getQuantity())
+                .amount(amount)
+                .productName(productName)
+                .pricingModel(pricingModel)
+                .build();
     }
 }
