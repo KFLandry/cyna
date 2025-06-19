@@ -146,6 +146,7 @@ public class ProductService {
                 .active(productdto.isActive())
                 .promo(productdto.isPromo())
                 .updatedAt(LocalDateTime.now())
+                .createdAt(product.getCreatedAt())
                 .build();
 
         productRepo.save(updatedProduct);
