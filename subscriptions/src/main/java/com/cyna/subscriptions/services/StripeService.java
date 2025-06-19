@@ -492,6 +492,7 @@ public class StripeService {
 
     /**
      * Liste toutes les méthodes de paiement d'un customer Stripe.
+     *
      * @param customerId l'ID Stripe du customer
      */
     public List<PaymentMethodResponseDto> listPaymentMethods(String customerId) {
@@ -565,6 +566,7 @@ public class StripeService {
 
     /**
      * Récupère la liste des abonnements Stripe pour un customerId donné.
+     *
      * @param customerId l'ID Stripe du customer
      * @return une liste de SubscriptionDto représentant les abonnements du client
      */
@@ -590,10 +592,13 @@ public class StripeService {
 
     /**
      * Méthode utilitaire pour mapper un objet Stripe Subscription à un SubscriptionDto.
+     *
      * @param stripeSubscription l'objet Subscription de Stripe
      * @return un SubscriptionDto
      */
     private SubscriptionDto mapStripeSubscriptionToDto(Subscription stripeSubscription) {
+        // Stripe fournit un timestamp en secondes, on le convertit en millisecondes pour JS
+        Long createdAtMillis = stripeSubscription.getCreated() * 1_000L;
 
         Long amount = null;
         String productName = null;
@@ -622,10 +627,15 @@ public class StripeService {
                 .customerId(stripeSubscription.getCustomer())
                 .priceId(priceId)
                 .status(stripeSubscription.getStatus())
-                .quantity(stripeSubscription.getItems().getData().isEmpty() ? null : stripeSubscription.getItems().getData().getFirst().getQuantity())
+                .quantity(
+                        stripeSubscription.getItems().getData().isEmpty()
+                                ? null
+                                : stripeSubscription.getItems().getData().getFirst().getQuantity()
+                )
                 .amount(amount)
                 .productName(productName)
                 .pricingModel(pricingModel)
+                .createdAt(createdAtMillis)    // ← nouveau champ
                 .build();
     }
 }

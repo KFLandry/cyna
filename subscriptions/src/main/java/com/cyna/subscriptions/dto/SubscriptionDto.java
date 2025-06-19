@@ -20,4 +20,5 @@ public class SubscriptionDto {
     private String productName;
     private String pricingModel;
     private String status;
+    private Long createdAt;
 }
