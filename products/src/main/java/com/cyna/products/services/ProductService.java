@@ -109,11 +109,12 @@ public class ProductService {
         return products.stream().map(productMapper::toDto).toList();
     }
 
-    public Pagination findByText(String text, long page, long size) {
+    public Pagination findByText(String text, long page, long size, Boolean active) {
         List<ProductGetDto> products = productRepo.findByText(text).stream()
                 .skip(page==1 ? 0 : page * size)
                 .limit(size)
                 .map(productMapper::toDto)
+                .filter(p -> (active == null|| p.isActive() == active))
                 .toList();
         return Pagination.builder()
                 .size(productRepo.countByText(text))
@@ -123,7 +124,6 @@ public class ProductService {
 
     public ProductGetDto getProduct(long productId) {
         return productMapper.toDto(productRepo.findById(productId).orElseThrow());
-
     }
 
     public String udpate(ProductDto productdto) {
@@ -154,8 +154,10 @@ public class ProductService {
     }
 
     public String deleteProduct(long id) {
-        productRepo.deleteById(id);
-
+        this.udpate(ProductDto.builder()
+                .id(id)
+                .active(false) // On désactive le produit
+                .build());
         // On supprime le produit de Stripe
         this.deleteStripePrice(id);
 
@@ -195,7 +197,7 @@ public class ProductService {
                     .uri(this.getServiceURI(SUBCRIPTIONS_ID) + "/api/v1/subscriptions/create-price/"+productId);
 
         } catch (Exception e) {
-            log.error("[StripeService][updateCustomerId] Error while deleting Sripe price", e);
+            log.error("[StripeService][updateCustomerId] Error while deleting Stripe price", e);
 
         }
     }
