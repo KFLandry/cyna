@@ -6,7 +6,6 @@ import com.cyna.auth_users.users.dto.UserMapper;
 import com.cyna.auth_users.users.models.ROLE;
 import com.cyna.auth_users.users.models.User;
 import com.cyna.auth_users.users.repositories.UserRepository;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,13 +13,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -120,7 +117,6 @@ public class UserService {
         userRepository.delete(user);
         return "User deleted";
     }
-
 
     public List<UserDto> getByName(String name) {
         return userRepository.findByFirstnameContainingIgnoreCaseOrLastnameContainingIgnoreCase(name, name).stream().map(userMapper::UserToUserDto).toList();

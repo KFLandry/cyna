@@ -47,8 +47,10 @@ public class ProductController {
     @GetMapping("/search")
     public ResponseEntity<Pagination> searchProducts(@RequestParam(value = "keyword", required = false) String keyword,
                                                         @RequestParam(value="page" , defaultValue = "0") long page,
-                                                        @RequestParam(value="size" , defaultValue = "6") long size) {
-        return ResponseEntity.ok(productService.findByText(keyword, page, size));
+                                                        @RequestParam(value="size" , defaultValue = "6") long size,
+                                                        @RequestParam(value = "active", required = false) boolean active)
+    {
+        return ResponseEntity.ok(productService.findByText(keyword, page, size, active));
     }
 
     @PostMapping
