@@ -38,7 +38,7 @@ on:
     branches: [ "main" ]
 
 env:
-  PROJECT_ID: 'smiling-spring-462009-t0' # TODO: update to your Google Cloud project ID
+  PROJECT_ID: 'project-01-417215' # TODO: update to your Google Cloud project ID
   GAR_LOCATION: europe # TODO: update to your region
   REPOSITORY: 'eu-images' # TODO: update to your Artifact Registry docker repository name
 
