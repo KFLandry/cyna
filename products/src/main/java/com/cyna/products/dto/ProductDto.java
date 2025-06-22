@@ -13,7 +13,7 @@ import java.util.Set;
 @Data
 @Builder
 public class ProductDto {
-    private long id;
+    private Long id;
 
     private String priceId;
 

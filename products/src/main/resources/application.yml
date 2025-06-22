@@ -1,0 +1,6 @@
+directory:
+  images: ${IMAGES_PATH:./images}
+
+# Endpoint pour servir les images statiques
+static:
+  location: /images

@@ -30,6 +30,7 @@ public class CarouselService {
 
     public List<CarouselGetDto> getAllCarousel(long limit) {
         return carouselRepo.findAll().stream()
+                .sorted((a, b) -> Long.compare(b.getId(), a.getId())) // <-- tri du plus récent au plus ancien
                 .limit(limit)
                 .map(carouselMapper::toGetDto)
                 .toList();
@@ -41,7 +42,9 @@ public class CarouselService {
         updateCarousel.setId(carousel.getId());
         updateCarousel.setTitle(Optional.ofNullable(carousel.getTitle()).orElse(updateCarousel.getTitle()));
         updateCarousel.setText(Optional.ofNullable(carousel.getText()).orElse(updateCarousel.getText()));
-        if (!carousel.getImages().isEmpty()) {
+
+        // Correction : remplacer l'image seulement si demandé (comme pour produits/catégories)
+        if (carousel.isReplaceImage() && carousel.getImages() != null && !carousel.getImages().isEmpty()) {
             Media image = mediaService.uploadFiles(carousel.getImages()).stream().findFirst().get();
             updateCarousel.setImageUrl(image.getUrl());
         }
