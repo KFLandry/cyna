@@ -46,18 +46,16 @@ springdoc:
     path: /swagger-ui.html
     operations-sorter: method
 
-stripe:
-  STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY}
-  STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
-  STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
-  STATIC_DIR: "../client"
-  return_url: ${RETURN_URL:http://localhost:1234}
-
 mailerSend:
-  from: ${MAIL_USERNAME:wilfried@trial-ywj2lpnqzo1g7oqz.mlsender.net}
-  support_email: ${SUPPORT_MAIL:wilfried@trial-ywj2lpnqzo1g7oqz.mlsender.net}
-  token: ${API_TOKEN}
+  from: zodiaquestar@gmail.com
+  support_email: support@test-86org8e8d2ngew13.mlsender.net
+  super_admin: zodiaquestar@gmail.com
+  token: "mlsn.bb6d1d29406fb4990121be59c181e45c23a0741696de1c9116ac5cc457b5d52a"
   templates:
-    generic_template:  "3z0vklo86e147qrx"
+    generic_template: "3vz9dlej3n74kj50"
     generic_template_with_button: "jpzkmgq87o2g059v"
     email_verified: "jy7zpl998erl5vx6"
+stripe:
+  publishable-key: pk_test_51RFIAlR4HDvdHnh3kjIJjPVIV0u1LRfhbGfqQpiGliWgIbXjkpPfHzeLLWjzK7vHu0VmTQqV4HYQYrvsG6G9KLOA00nADdiJ0E
+  secret-key: sk_test_51RFIAlR4HDvdHnh3mtvzfNGinHxKEyaSvAc6WRpDQkt9twvPYY8kRjSh2MVLR8wv7LggsGWBD7M4Mbfj3LytC5Cy00W4oFSLc6
+  webhook-secret: whsec_b445870c24c152547e2cf7fd46d6767b55c9ea956be6d42dea53676b7c9f10af

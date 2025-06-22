@@ -7,11 +7,11 @@ spring:
     config:
       enabled: false
 
-# Ajoutez cette section
 directory:
   #images: ${IMAGES_DIRECTORY:./uploads/images}  # Chemin par défaut vers le dossier des images
-  #images: C:/Users/zodia/OneDrive/Bureau/Cyna/images
-  images : ./images/
+  #images: C:/Projets/Personnel/Cyna_Projet/uploads/images
+  static:
+  location : uploads/images/
 endpoints:
   validate_email: ${FRONT_END_URL:http://localhost:8080}/api/v1/auth/validate-email
   validate_account: ${FRONT_END_URL:http://localhost:8080}/api/v1/auth/validate-account

@@ -1,5 +1,16 @@
-spring :
-  application :
-    name : config-server
+spring:
+  application:
+    name: config-server
+  cloud:
+    config:
+      server:
+        native:
+          search-locations: file:C:/Projets/Personnel/Cyna_Projet/config-repo/
+        # La ligne suivante n'est généralement pas nécessaire si 'native' est activé,
+        # car le profil 'native' a la priorité sur le comportement Git par défaut.
+        # git:
+        #   enabled: false
   profiles:
-    active: ${PROFILE:dev}
+    active: native
+server:
+  port: 8888

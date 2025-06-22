@@ -30,29 +30,29 @@ public class MailerSendService implements IEmailService {
 
 
     private MailerSend mailSender;
-    private Email email;
 
     @PostConstruct
     public void init() {
         mailSender = new MailerSend();
         mailSender.setToken(token);
-        this.email = new Email();
     }
 
     @Override
     public void sendEmail(String to, String link, String eventType) {
+        // Nouvelle instance de Email pour chaque envoi
+        Email email = new Email();
 
         email.setFrom("Cyna Team", from);
         Recipient recipient = new Recipient(to.split("@")[0], to);
         email.AddRecipient(recipient);
         email.setTemplateId(template);
         Map<String, String> button = new HashMap<>();
-        String subject =  null;
-        // Choix du contenu personnalisé en fonction du templateType
+        String subject = null;
+
         switch (eventType) {
             case "signup":
                 subject = "Welcome to Cyna Projet!";
-                email.addPersonalization(recipient, "subject",subject );
+                email.addPersonalization(recipient, "subject", subject);
                 email.addPersonalization(recipient, "message", "Thank you for signing up with us. We're excited to have you on board. Please confirm your email to complete your registration.");
                 // Button
                 button.put("label", "Verify my email");
@@ -85,16 +85,15 @@ public class MailerSendService implements IEmailService {
                 break;
             case "invoice.finalized":
                 subject = "Invoice Finalized";
-                email.addPersonalization(recipient, "subject",subject);
+                email.addPersonalization(recipient, "subject", subject);
                 email.addPersonalization(recipient, "message", "Your invoice has been finalized. Please check your account for details. If you have any questions, feel free to reach out to us.");
                 // Button
                 button.put("label", "Download your billing");
                 break;
             case "customer.updated":
-                subject ="Billing information updated";
-                email.addPersonalization(recipient, "subject", subject );
+                subject = "Billing information updated";
+                email.addPersonalization(recipient, "subject", subject);
                 email.addPersonalization(recipient, "message", "You made the updates on your billing information on Customer portal. If you have any questions, feel free to reach out to us.");
-
                 // Button
                 button.put("label", "Access to your customer portal");
                 break;
@@ -106,7 +105,7 @@ public class MailerSendService implements IEmailService {
                 button.put("label", "Access to your customer portal");
                 break;
             case "customer.subscription.deleted":
-                subject ="Subscription Cancellation Notice";
+                subject = "Subscription Cancellation Notice";
                 email.addPersonalization(recipient, "subject", subject);
                 email.addPersonalization(recipient, "message", "Your subscription has been canceled as per your request. If this was a mistake, please contact our support team immediately.");
                 // Button
@@ -121,6 +120,9 @@ public class MailerSendService implements IEmailService {
                 break;
             default:
                 log.error("[MailerSendService][sendEmail] {} are unhandled! ", eventType);
+                subject = "Notification from Cyna Project";
+                email.addPersonalization(recipient, "subject", subject);
+                email.addPersonalization(recipient, "message", "An unhandled event occurred. Please contact support.");
                 break;
         }
 
@@ -134,6 +136,5 @@ public class MailerSendService implements IEmailService {
         } catch (MailerSendException e) {
             log.error("[MailerSendService][sendMail] Error while sending email to {}", to, e);
         }
-
     }
 }
