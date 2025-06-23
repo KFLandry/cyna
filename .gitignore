@@ -38,3 +38,9 @@ build/
 /images/
 
 
+/subscriptions/src/main/resources/.env_gg
+/products/src/main/resources/.env_gg
+/eureka-server/src/main/resources/.env_gg
+/config-server/src/main/resources/.env_gg
+/api-gateway/src/main/resources/.env_gg
+/auth-users/src/main/resources/.env_gg
