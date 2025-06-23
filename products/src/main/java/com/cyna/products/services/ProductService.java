@@ -17,7 +17,6 @@ import org.springframework.web.client.RestClient;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -203,7 +202,7 @@ public class ProductService {
         }
     }
 
-    public URI getServiceURI(String serviceId){
+    public String getServiceURI(String serviceId){
         List<ServiceInstance> instances = discoveryClient.getInstances(serviceId);
         if (instances.isEmpty()) {
             log.error("No instances found for service: {}", serviceId);
@@ -211,9 +210,9 @@ public class ProductService {
         }
 
         ServiceInstance serviceInstance = instances.getFirst();
-        log.debug("Calling auth service at: {}", serviceInstance.getUri());
+        log.debug("Calling auth service at: {}", serviceInstance.getServiceId());
 
-        return serviceInstance.getUri();
+        return serviceInstance.getServiceId();
     }
 
     public List<ProductGetDto> getTopProducts(int top, Boolean promo, Boolean active) {

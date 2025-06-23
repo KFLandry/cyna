@@ -32,7 +32,7 @@ public class AggregatedApiDocController {
                 ServiceInstance instance = discoveryClient.getInstances(serviceId).getFirst();
                 Mono<JsonNode> docMono = webClientBuilder.build()
                         .get()
-                        .uri(instance.getUri() + "/api-docs")
+                        .uri(instance.getServiceId() + "/api-docs")
                         .retrieve()
                         .bodyToMono(JsonNode.class);
                 docsMonos.add(docMono);
