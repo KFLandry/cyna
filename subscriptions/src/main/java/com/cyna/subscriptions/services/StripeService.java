@@ -2,21 +2,21 @@ package com.cyna.subscriptions.services;
 
 import com.cyna.subscriptions.dto.*;
 import com.google.gson.JsonSyntaxException;
-import com.stripe.param.*;
-import jakarta.servlet.http.HttpServletRequest;
-import lombok.RequiredArgsConstructor;
-import org.springframework.cloud.client.discovery.DiscoveryClient;
 import com.stripe.Stripe;
 import com.stripe.exception.SignatureVerificationException;
 import com.stripe.exception.StripeException;
 import com.stripe.model.*;
 import com.stripe.model.billingportal.Session;
 import com.stripe.net.Webhook;
+import com.stripe.param.*;
 import com.stripe.param.billingportal.SessionCreateParams;
 import jakarta.annotation.PostConstruct;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.ServiceInstance;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
@@ -25,7 +25,6 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.HashMap;
@@ -390,7 +389,7 @@ public class StripeService {
         }
     }
 
-    public URI getServiceURI(String serviceId){
+    public String getServiceURI(String serviceId){
         List<ServiceInstance> instances = discoveryClient.getInstances(serviceId);
         if (instances.isEmpty()) {
             log.error("No instances found for service: {}", serviceId);
@@ -400,7 +399,7 @@ public class StripeService {
         ServiceInstance serviceInstance = instances.getFirst();
         log.debug("Calling auth service at: {}", serviceInstance.getUri());
 
-        return serviceInstance.getUri();
+        return serviceInstance.getServiceId();
     }
 
     public String getTokenRelay(){
