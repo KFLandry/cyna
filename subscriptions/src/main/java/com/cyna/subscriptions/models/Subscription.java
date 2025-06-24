@@ -8,27 +8,31 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
-import java.util.Date;
 
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
 @Builder
+@Table(name = "subscription")
 public class Subscription {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // And Id provide by stripe
+    // Id stripe
     @Column(nullable = false, unique = true, name = "subscriptionId")
     private String subscriptionId;
 
-    @JoinColumn(name = "customer_id", nullable = false)
+    @Column(name = "customer_id", nullable = false)
     private String customerId;
 
-    @JoinColumn(name = "productId", nullable = false)
+    @Column(name = "productId", nullable = false)
     private Long productId;
+
+
+    @Column(name = "price_id", nullable = false)
+    private String priceId;
 
     @Column(nullable = false)
     private String orderNumber;

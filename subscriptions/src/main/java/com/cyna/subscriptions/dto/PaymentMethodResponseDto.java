@@ -13,6 +13,6 @@ public class PaymentMethodResponseDto {
     private int expiryYear;
     private String type;
     private String cardholderName;
-    @JsonProperty("isDefault") //soucis d'intéraction/sérialisation Lombok-> JSON de br1
+    @JsonProperty("isDefault")
     private boolean isDefault;
 }

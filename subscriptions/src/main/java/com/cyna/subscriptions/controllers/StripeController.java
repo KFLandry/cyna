@@ -53,7 +53,6 @@ public class StripeController {
     @GetMapping(params = "customerId")
     public ResponseEntity<List<SubscriptionDto>> getSubscriptionByCustomerId(@RequestParam("customerId") String customerId){
         // Nouvelle implémentation : appeler le StripeService pour récupérer depuis Stripe
-        // Note: Le type de retour est maintenant List<SubscriptionDto> car mapStripeSubscriptionToDto renvoie des SubscriptionDto
         List<SubscriptionDto> subscriptionsFromStripe = stripeService.listSubscriptionsByCustomer(customerId);
 
         if (subscriptionsFromStripe.isEmpty()) {
