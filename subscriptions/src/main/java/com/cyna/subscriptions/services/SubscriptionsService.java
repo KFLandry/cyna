@@ -26,7 +26,22 @@ public class SubscriptionsService {
     private StripeService stripeService;
 
     public Subscription create(Subscription subscription) {
-        return subscriptionRepo.save(subscription);
+        try {
+            log.info("[SubscriptionsService][create] Attempting to save subscription with subscriptionId: {}",
+                    subscription.getSubscriptionId());
+            log.info("[SubscriptionsService][create] Subscription details - customerId: {}, productId: {}, amount: {}, quantity: {}",
+                    subscription.getCustomerId(), subscription.getProductId(), subscription.getAmount(), subscription.getQuantity());
+
+            Subscription savedSubscription = subscriptionRepo.save(subscription);
+
+            log.info("[SubscriptionsService][create] Successfully saved subscription with internal ID: {} and subscriptionId: {}",
+                    savedSubscription.getId(), savedSubscription.getSubscriptionId());
+
+            return savedSubscription;
+        } catch (Exception e) {
+            log.error("[SubscriptionsService][create] Error saving subscription: {}", e.getMessage(), e);
+            throw e;
+        }
     }
 
     public void delete(String subscriptionId) {

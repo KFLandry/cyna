@@ -179,11 +179,45 @@ public class StripeService {
                 .build();
         try {
             Subscription subscription = Subscription.create(params);
+
+            // Sauvegarde en base de données locale
+            try {
+                Price stripePrice = Price.retrieve(subscription.getItems().getData().getFirst().getPrice().getId());
+                Product stripeProduct = Product.retrieve(stripePrice.getProduct());
+
+                // Log pour debug
+                log.info("[StripeService][createSubscription] Attempting to save subscription with ID: {}", subscription.getId());
+                log.info("[StripeService][createSubscription] Customer ID: {}, Price ID: {}, Product ID: {}",
+                        subscription.getCustomer(), stripePrice.getId(), stripeProduct.getMetadata().get("productId"));
+
+                com.cyna.subscriptions.models.Subscription newSubscription = com.cyna.subscriptions.models.Subscription.builder()
+                        .subscriptionId(subscription.getId())
+                        .customerId(subscription.getCustomer())
+                        .productId(Long.valueOf(stripeProduct.getMetadata().get("productId")))
+                        .status(SubscriptionListParams.Status.valueOf(subscription.getStatus().toUpperCase()))
+                        .paymentMethod(subscription.getDefaultPaymentMethod() != null ? subscription.getDefaultPaymentMethod() : "CARD")
+                        .amount(stripePrice.getUnitAmount() != null ? stripePrice.getUnitAmount().doubleValue() / 100.0 : 0.0) // Conversion centimes vers euros
+                        .quantity(subscription.getItems().getData().getFirst().getQuantity())
+                        .orderNumber("ORDER-" + System.currentTimeMillis()) // Génération d'un numéro de commande
+                        .createdAt(LocalDateTime.now())
+                        .updatedAt(LocalDateTime.now())
+                        .build();
+
+                com.cyna.subscriptions.models.Subscription savedSubscription = subscriptionService.create(newSubscription);
+                log.info("[StripeService][createSubscription] Subscription successfully saved to database with internal ID: {}", savedSubscription.getId());
+
+            } catch (Exception e) {
+                log.error("[StripeService][createSubscription] Error while saving subscription to database: {}", e.getMessage(), e);
+                // On continue même si la sauvegarde en BDD échoue, car l'abonnement Stripe est créé
+            }
+
             Map<String, Object> responseData = new HashMap<>();
             Invoice latestInvoice = Invoice.retrieve(subscription.getLatestInvoice());
             responseData.put("customerId", subscription.getCustomer());
             responseData.put("clientSecret", PaymentIntent.retrieve(latestInvoice.getPaymentIntent()).getClientSecret());
+            responseData.put("subscriptionId", subscription.getId()); // Ajout de l'ID de l'abonnement dans la réponse
             return StripeObject.PRETTY_PRINT_GSON.toJson(responseData);
+
         } catch (StripeException e) {
             throw new ResponseStatusException(HttpStatusCode.valueOf(400), e.getStripeError().getMessage());
         }
