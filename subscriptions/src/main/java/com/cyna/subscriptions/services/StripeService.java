@@ -39,6 +39,8 @@ import com.stripe.model.Customer;
 import com.stripe.model.PaymentMethod;
 import com.stripe.model.PaymentMethodCollection;
 import com.stripe.param.PaymentMethodListParams;
+import org.springframework.http.ResponseEntity;
+
 
 
 @Service
@@ -193,27 +195,41 @@ public class StripeService {
         return config;
     }
 
-    public Subscription cancelSubscription(String subscriptionId) {
+
+    public String cancelSubscription(String subscriptionId) {
         try {
             Subscription subscription = Subscription.retrieve(subscriptionId);
-            return subscription.cancel();
+            subscription.cancel(); // on exécute sans retourner d'objet Stripe
+            return "Subscription canceled successfully";
         } catch (StripeException e) {
-            throw new ResponseStatusException(HttpStatusCode.valueOf(400), e.getStripeError().getMessage());
+            String message = e.getStripeError() != null
+                    ? e.getStripeError().getMessage()
+                    : "Erreur Stripe inconnue lors de l'annulation.";
+            log.error("[StripeService][cancelSubscription] StripeException", e);
+            throw new ResponseStatusException(HttpStatusCode.valueOf(400), message);
         }
     }
+
+
 
     public Object handleWebhook(String sigHeader, String payload) {
         Event event;
         try {
             event = Webhook.constructEvent(payload, sigHeader, stripeWebhookSecret);
+            log.info("[Webhook] Type reçu : {}", event.getType());
+            log.debug("[Webhook] Payload : {}", payload);
+
         } catch (SignatureVerificationException | JsonSyntaxException e) {
             throw new ResponseStatusException(HttpStatusCode.valueOf(400), e.getMessage());
         }
 
         StripeObject stripeObject = event.getDataObjectDeserializer().getObject().orElse(null);
         if (stripeObject == null) {
-            throw new ResponseStatusException(HttpStatusCode.valueOf(400), "Unable to deserialize webhook event object.");
+            log.warn("[Webhook] Impossible de désérialiser l’objet Stripe : {}", event.getType());
+            return ResponseEntity.status(200).body("ignored");
         }
+
+
 
         switch (event.getType()) {
             case "invoice.paid":

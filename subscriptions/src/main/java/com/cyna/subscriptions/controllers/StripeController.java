@@ -110,8 +110,9 @@ public class StripeController {
 
     @PostMapping("/subscription/cancel")
     public ResponseEntity<Object> cancelSubscription(@RequestBody SubscriptionDto subscriptionDto){
-        return ResponseEntity.ok(stripeService.cancelSubscription(subscriptionDto.getCustomerId()));
+        return ResponseEntity.ok(stripeService.cancelSubscription(subscriptionDto.getSubscriptionId()));
     }
+
 
     @PostMapping("/webhook")
     public ResponseEntity<Object> webhook(@RequestHeader("Stripe-Signature") String sigHeader, @RequestBody String payload){
