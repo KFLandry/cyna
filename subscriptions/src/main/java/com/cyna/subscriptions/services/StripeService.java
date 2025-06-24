@@ -102,7 +102,7 @@ public class StripeService {
         PriceCreateParams params = switch (priceDto.getPricingModel()) {
             case ONE_TIME -> PriceCreateParams.builder()
                     .setCurrency(priceDto.getCurrency())
-                    .setUnitAmount(priceDto.getAmount())
+                    .setUnitAmount((long) (priceDto.getAmount() * 100))
                     .setProductData(PriceCreateParams.ProductData.builder()
                             .setName(priceDto.getProductName())
                             .putMetadata("productId", priceDto.getProductId())
@@ -111,7 +111,7 @@ public class StripeService {
 
             case PER_MONTH_PER_DEVICE, PER_MONTH_PER_USER -> PriceCreateParams.builder()
                     .setCurrency(priceDto.getCurrency())
-                    .setUnitAmount(priceDto.getAmount())
+                    .setUnitAmount((long) (priceDto.getAmount() * 100))
                     .setRecurring(PriceCreateParams.Recurring.builder()
                             .setInterval(PriceCreateParams.Recurring.Interval.MONTH)
                             .build())
@@ -123,7 +123,7 @@ public class StripeService {
 
             case PER_YEAR_PER_DEVICE, PER_YEAR_PER_USER -> PriceCreateParams.builder()
                     .setCurrency(priceDto.getCurrency())
-                    .setUnitAmount(priceDto.getAmount())
+                    .setUnitAmount((long) (priceDto.getAmount() * 100))
                     .setRecurring(PriceCreateParams.Recurring.builder()
                             .setInterval(PriceCreateParams.Recurring.Interval.YEAR)
                             .build())
@@ -135,7 +135,7 @@ public class StripeService {
 
             case PAY_AS_YOU_GO -> PriceCreateParams.builder()
                     .setCurrency(priceDto.getCurrency())
-                    .setUnitAmount(priceDto.getAmount())
+                    .setUnitAmount((long) (priceDto.getAmount() * 100))
                     .setRecurring(PriceCreateParams.Recurring.builder()
                             .setInterval(PriceCreateParams.Recurring.Interval.MONTH)
                             .setUsageType(PriceCreateParams.Recurring.UsageType.METERED)
