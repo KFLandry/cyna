@@ -78,7 +78,7 @@ public class SubscriptionsService {
 
     public void update(Subscription subscription) {
 
-        // TODO : Implementer une logique de validation coté client avant de modifier la subscription.
+        // 📍TODO : Implementer une logique de validation coté client avant de modifier la subscription.
 
         Subscription initialSubscription = subscriptionRepo.findById(subscription.getId()).orElseThrow();
 

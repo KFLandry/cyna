@@ -174,51 +174,53 @@ public class StripeService {
                         .setQuantity(subscriptionDto.getQuantity())
                         .build())
                 .setCustomer(subscriptionDto.getCustomerId())
-                .setPaymentBehavior(SubscriptionCreateParams.PaymentBehavior.DEFAULT_INCOMPLETE) // <-- important !
-                .addAllExpand(Collections.singletonList("latest_invoice.payment_intent")) // <-- important !
+                .setPaymentBehavior(SubscriptionCreateParams.PaymentBehavior.DEFAULT_INCOMPLETE)
+                .addAllExpand(Collections.singletonList("latest_invoice.payment_intent"))
                 .build();
         try {
             Subscription subscription = Subscription.create(params);
 
-            // Sauvegarde en base de données locale
+            // Sauvegarde en BDD
             try {
+                // Pour récupérer le nom du produit et le modèle de tarification
                 Price stripePrice = Price.retrieve(subscription.getItems().getData().getFirst().getPrice().getId());
                 Product stripeProduct = Product.retrieve(stripePrice.getProduct());
 
-                // Log pour debug
-                log.info("[StripeService][createSubscription] Attempting to save subscription with ID: {}", subscription.getId());
+                log.info("[StripeService][createSubscription] Tentative de sauvegarde de l'abonnement avec l'ID Stripe : {}", subscription.getId());
                 log.info("[StripeService][createSubscription] Customer ID: {}, Price ID: {}, Product ID: {}",
-                        subscription.getCustomer(), stripePrice.getId(), stripeProduct.getMetadata().get("productId"));
+                        subscription.getCustomer(), stripePrice.getId(), stripeProduct.getId());
 
+                // Construire l'entité Subscription pour la sauvegarde en BDD
                 com.cyna.subscriptions.models.Subscription newSubscription = com.cyna.subscriptions.models.Subscription.builder()
                         .subscriptionId(subscription.getId())
                         .customerId(subscription.getCustomer())
                         .productId(Long.valueOf(stripeProduct.getMetadata().get("productId")))
+                        .priceId(stripePrice.getId())
                         .status(SubscriptionListParams.Status.valueOf(subscription.getStatus().toUpperCase()))
-                        .paymentMethod(subscription.getDefaultPaymentMethod() != null ? subscription.getDefaultPaymentMethod() : "CARD")
-                        .amount(stripePrice.getUnitAmount() != null ? stripePrice.getUnitAmount().doubleValue() / 100.0 : 0.0) // Conversion centimes vers euros
+                        .paymentMethod(subscription.getDefaultPaymentMethod() != null ? subscription.getDefaultPaymentMethod() : "unknown")
+                        .amount(stripePrice.getUnitAmount() != null ? stripePrice.getUnitAmount().doubleValue() / 100.0 : 0.0)
                         .quantity(subscription.getItems().getData().getFirst().getQuantity())
-                        .orderNumber("ORDER-" + System.currentTimeMillis()) // Génération d'un numéro de commande
+                        .orderNumber("ORDER-" + System.currentTimeMillis())
                         .createdAt(LocalDateTime.now())
                         .updatedAt(LocalDateTime.now())
                         .build();
 
+                // Sauvegarde l'abonnement dans la BDD
                 com.cyna.subscriptions.models.Subscription savedSubscription = subscriptionService.create(newSubscription);
-                log.info("[StripeService][createSubscription] Subscription successfully saved to database with internal ID: {}", savedSubscription.getId());
 
             } catch (Exception e) {
-                log.error("[StripeService][createSubscription] Error while saving subscription to database: {}", e.getMessage(), e);
-                // On continue même si la sauvegarde en BDD échoue, car l'abonnement Stripe est créé
+                log.error("[StripeService][createSubscription] Erreur lors de la sauvegarde de l'abonnement en base de données (l'abonnement Stripe a été créé): {}", e.getMessage(), e);
             }
 
             Map<String, Object> responseData = new HashMap<>();
             Invoice latestInvoice = Invoice.retrieve(subscription.getLatestInvoice());
             responseData.put("customerId", subscription.getCustomer());
             responseData.put("clientSecret", PaymentIntent.retrieve(latestInvoice.getPaymentIntent()).getClientSecret());
-            responseData.put("subscriptionId", subscription.getId()); // Ajout de l'ID de l'abonnement dans la réponse
+            responseData.put("subscriptionId", subscription.getId());
             return StripeObject.PRETTY_PRINT_GSON.toJson(responseData);
 
         } catch (StripeException e) {
+            log.error("[StripeService][createSubscription] Erreur Stripe lors de la création de l'abonnement: {}", e.getMessage(), e);
             throw new ResponseStatusException(HttpStatusCode.valueOf(400), e.getStripeError().getMessage());
         }
     }
@@ -233,7 +235,7 @@ public class StripeService {
     public String cancelSubscription(String subscriptionId) {
         try {
             Subscription subscription = Subscription.retrieve(subscriptionId);
-            subscription.cancel(); // on exécute sans retourner d'objet Stripe
+            subscription.cancel();
             return "Subscription canceled successfully";
         } catch (StripeException e) {
             String message = e.getStripeError() != null
@@ -299,10 +301,9 @@ public class StripeService {
                 processSetupIntentSucceeded((Subscription) stripeObject);
                 break;
             case "setup_intend.failed":
-                // Traitement de l'échec du setup, à définir si besoin.
                 break;
             default:
-                // Événement non géré.
+
         }
         return null;
     }
@@ -334,7 +335,7 @@ public class StripeService {
     }
 
     private void processCustomerDeleted(Customer customer) {
-        // On ne supprime pas complete l'user, mais on defini son customerId à NULL
+        // customerId à NULL
         UserDto userDto = UserDto.builder()
                 .customerId(null)
                 .build();
@@ -392,26 +393,44 @@ public class StripeService {
 
     private Object processSubscriptionCreated(Subscription subscription) {
         if (subscription == null) {
-            throw new NullPointerException("Subscription is null in customer.subscription.created event");
+            throw new NullPointerException("Subscription est null dans l'événement customer.subscription.created");
         }
         com.cyna.subscriptions.models.Subscription newSubscription = null;
         try {
+            // Si l'événement ne contient pas toutes les données, appel Stripe API.
+            // Ici, je récupère Price et Product pour s'assurer d'avoir toutes les métadonnées.
+            Price stripePrice = Price.retrieve(subscription.getItems().getData().getFirst().getPrice().getId());
+            Product stripeProduct = Product.retrieve(stripePrice.getProduct());
+
             newSubscription = com.cyna.subscriptions.models.Subscription.builder()
                     .subscriptionId(subscription.getId())
                     .customerId(subscription.getCustomer())
-                    .productId(Long.valueOf(Product.retrieve(subscription.getItems().getData().getFirst().getPrice().getProduct()).getMetadata().get("productId")))
+                    // Vérif si "productId" est bien dans les métadonnées de ton produit Stripe
+                    .productId(Long.valueOf(stripeProduct.getMetadata().get("productId")))
                     .status(SubscriptionListParams.Status.valueOf(subscription.getStatus().toUpperCase()))
-                    .paymentMethod(subscription.getDefaultPaymentMethod())
-                    .amount(Price.retrieve(subscription.getItems().getData().getFirst().getPrice().getId()).getUnitAmount())
+                    // Le defaultPaymentMethod peut être null si l'abonnement est créé sans mode de paiement par défaut défini.
+                    // Il est souvent mis à jour lors d'événements ultérieurs comme 'invoice.paid' ou 'payment_method.attached'.
+                    .paymentMethod(subscription.getDefaultPaymentMethod() != null ? subscription.getDefaultPaymentMethod() : "unknown")
+                    // amount de Price est en centimes. Convertis en double pour la BDD.
+                    .amount(stripePrice.getUnitAmount() != null ? stripePrice.getUnitAmount().doubleValue() / 100.0 : 0.0)
                     .quantity(subscription.getItems().getData().getFirst().getQuantity())
+                    .orderNumber("WEBHOOK-ORDER-" + System.currentTimeMillis()) // Générer d'un orderNumber pour les webhooks
                     .createdAt(LocalDateTime.now())
-                    .createdAt(LocalDateTime.now())
+                    .updatedAt(LocalDateTime.now()) // Ajout de updatedAt
                     .build();
+
+            log.info("[StripeService][processSubscriptionCreated] Tentative de sauvegarde de l'abonnement via webhook pour l'ID Stripe: {}", subscription.getId());
+            com.cyna.subscriptions.models.Subscription savedSubscription = subscriptionService.create(newSubscription);
+            log.info("[StripeService][processSubscriptionCreated] Abonnement sauvegardé avec succès en base de données via webhook avec l'ID interne: {}", savedSubscription.getId());
+
         } catch (StripeException e) {
-            log.error("[StripeService][processSubscriptionCreated] Error while processing subscription creation", e);
-            throw new RuntimeException(e);
+            log.error("[StripeService][processSubscriptionCreated] Erreur Stripe lors du traitement de la création d'abonnement via webhook: {}", e.getMessage(), e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Erreur lors de la récupération des détails Stripe: " + e.getMessage());
+        } catch (Exception e) {
+            log.error("[StripeService][processSubscriptionCreated] Erreur générique lors du traitement de la création d'abonnement via webhook: {}", e.getMessage(), e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Erreur interne lors du traitement du webhook: " + e.getMessage());
         }
-        return subscriptionService.create(newSubscription);
+        return newSubscription; // Je retourne l'objet pour confirmation du webhook
     }
 
     private void processSubscriptionUpdated(Subscription subscription) {
@@ -624,7 +643,7 @@ public class StripeService {
         try {
             SubscriptionListParams params = SubscriptionListParams.builder()
                     .setCustomer(customerId)
-                    .setStatus(SubscriptionListParams.Status.ACTIVE) // Optionnel: ne récupérer que les abonnements actifs
+                    .setStatus(SubscriptionListParams.Status.ACTIVE)
                     .build();
 
             SubscriptionCollection subscriptions = Subscription.list(params);
@@ -647,7 +666,7 @@ public class StripeService {
      * @return un SubscriptionDto
      */
     private SubscriptionDto mapStripeSubscriptionToDto(Subscription stripeSubscription) {
-        // Stripe fournit un timestamp en secondes, on le convertit en millisecondes pour JS
+        // Stripe fournit un timestamp en secondes donc  convertion en millisecondes pour JS
         Long createdAtMillis = stripeSubscription.getCreated() * 1_000L;
 
         Long amount = null;
@@ -685,7 +704,7 @@ public class StripeService {
                 .amount(amount)
                 .productName(productName)
                 .pricingModel(pricingModel)
-                .createdAt(createdAtMillis)    // ← nouveau champ
+                .createdAt(createdAtMillis)
                 .build();
     }
 }
