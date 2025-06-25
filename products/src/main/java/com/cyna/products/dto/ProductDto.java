@@ -13,7 +13,7 @@ import java.util.Set;
 @Data
 @Builder
 public class ProductDto {
-    private long id;
+    private Long id;
 
     private String priceId;
 
@@ -27,14 +27,14 @@ public class ProductDto {
 
     private PricingModel pricingModel;
 
-    private long amount;
+    private Long amount;
 
-    private long categoryId;
+    private Long categoryId;
 
     @ArraySchema(schema = @Schema(type = "string", format = "binary"))
     private Set<MultipartFile> images;
 
     private ProductStatus status = ProductStatus.AVAILABLE;
-    private boolean active = true;
-    private boolean promo = false;
+    private Boolean active = true;
+    private Boolean promo = false;
 }
