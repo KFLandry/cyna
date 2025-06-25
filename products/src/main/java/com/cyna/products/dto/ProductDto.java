@@ -34,7 +34,14 @@ public class ProductDto {
     @ArraySchema(schema = @Schema(type = "string", format = "binary"))
     private Set<MultipartFile> images;
 
-    private ProductStatus status = ProductStatus.AVAILABLE;
-    private Boolean active = true;
-    private Boolean promo = false;
+    private ProductStatus status;
+    private Boolean active;
+    private Boolean promo;
+
+    public Boolean isActive() {
+        return active;
+    }
+    public Boolean isPromo() {
+        return promo;
+    }
 }

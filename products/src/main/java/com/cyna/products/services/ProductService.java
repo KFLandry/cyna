@@ -4,6 +4,7 @@ import com.cyna.products.dto.*;
 import com.cyna.products.models.Category;
 import com.cyna.products.models.Media;
 import com.cyna.products.models.Product;
+import com.cyna.products.models.ProductStatus;
 import com.cyna.products.repositories.ProductRepo;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.BadRequestException;
@@ -82,12 +83,12 @@ public class ProductService {
                 .brand(productDto.getBrand())
                 .pricingModel(productDto.getPricingModel())
                 .amount(productDto.getAmount())
-                .status(productDto.getStatus())
+                .status(Optional.ofNullable(productDto.getStatus()).orElse(ProductStatus.AVAILABLE))
                 .images(images)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
-                .active(productDto.isActive())
-                .promo(productDto.isPromo())
+                .active(Optional.ofNullable(productDto.isActive()).orElse(true))
+                .promo(Optional.ofNullable(productDto.isPromo()).orElse(false))
                 .build();
 
         // On save pour avoir l'id du produit
@@ -143,8 +144,8 @@ public class ProductService {
                         categoryService.getCategoryById(productdto.getCategoryId()) :
                         product.getCategory())
                 .amount(Optional.of(productdto.getAmount()).orElse(product.getAmount()))
-                .active(productdto.isActive())
-                .promo(productdto.isPromo())
+                .active(Optional.ofNullable(productdto.isActive()).orElse(product.isActive()))
+                .promo(Optional.ofNullable(productdto.isPromo()).orElse(product.isPromo()))
                 .updatedAt(LocalDateTime.now())
                 .createdAt(product.getCreatedAt())
                 .build();
