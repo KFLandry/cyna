@@ -35,7 +35,7 @@ public class TokenValidationClient {
 
             return restClientBuilder.build()
                     .post()
-                    .uri(serviceInstance.getServiceId() + "/api/v1/auth/validate")
+                    .uri(serviceInstance.getUri() + "/api/v1/auth/validate")
                     .body(new TokenValidationRequest(token))
                     .retrieve()
                     .body(ValidationResult.class);

@@ -25,6 +25,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.HashMap;
@@ -389,7 +390,7 @@ public class StripeService {
         }
     }
 
-    public String getServiceURI(String serviceId){
+    public URI getServiceURI(String serviceId){
         List<ServiceInstance> instances = discoveryClient.getInstances(serviceId);
         if (instances.isEmpty()) {
             log.error("No instances found for service: {}", serviceId);
@@ -399,7 +400,7 @@ public class StripeService {
         ServiceInstance serviceInstance = instances.getFirst();
         log.debug("Calling auth service at: {}", serviceInstance.getUri());
 
-        return serviceInstance.getServiceId();
+        return serviceInstance.getUri();
     }
 
     public String getTokenRelay(){
