@@ -135,7 +135,15 @@ public class ProductService {
     public String udpate(ProductDto productdto) {
         Product product = productRepo.findById(productdto.getId()).orElseThrow();
 
-        // On update uniquement les champs ayant change
+        Set<Media> images;
+        if (productdto.getImages() == null || productdto.getImages().isEmpty()) {
+            // On garde les images existantes si aucune nouvelle image n'est envoyée
+            images = product.getImages();
+        } else {
+            // On ajoute les nouvelles images aux existantes
+            images = new HashSet<>(product.getImages());
+            images.addAll(mediaService.uploadFiles(productdto.getImages()));
+        }
 
         Product updatedProduct = Product.builder()
                 .id(product.getId())
@@ -151,6 +159,7 @@ public class ProductService {
                 .amount(Optional.of(productdto.getAmount()).orElse(product.getAmount()))
                 .active(Optional.ofNullable(productdto.isActive()).orElse(product.isActive()))
                 .promo(Optional.ofNullable(productdto.isPromo()).orElse(product.isPromo()))
+                .images(images) // <-- Correction ici
                 .updatedAt(LocalDateTime.now())
                 .createdAt(product.getCreatedAt())
                 .build();

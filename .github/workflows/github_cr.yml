@@ -1,0 +1,56 @@
+name: Build and Publish images on GitHub CR
+
+on:
+  push:
+    branches: ["main"]
+    
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      RAW_OWNER: ${{ github.repository_owner }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4.2.2
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3.3.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.PAT_GITHUB_PACKAGE_PUBLICATION }}
+
+      - name: Convert RAW_OWNER to lowercase
+        run: |
+          echo "OWNER_LOWER=${RAW_OWNER,,}" >> $GITHUB_ENV
+
+      - name: Build and push CONFIG-SERVER image
+        run: |
+          docker build -t ghcr.io/${OWNER_LOWER}/cyna-config-server:latest ./config-server
+          docker push ghcr.io/${OWNER_LOWER}/cyna-config-server:latest
+
+      - name: Build and push EUREKA-SERVER image
+        run: |
+          docker build -t ghcr.io/${OWNER_LOWER}/cyna-eureka-server:latest ./eureka-server
+          docker push ghcr.io/${OWNER_LOWER}/cyna-eureka-server:latest
+
+      - name: Build and push API-GATEWAY image
+        run: |
+          docker build -t ghcr.io/${OWNER_LOWER}/cyna-api-gateway:latest ./api-gateway
+          docker push ghcr.io/${OWNER_LOWER}/cyna-api-gateway:latest
+
+      - name: Build and push AUTH-USERS image
+        run: |
+          docker build -t ghcr.io/${OWNER_LOWER}/cyna-auth-users:latest ./auth-users
+          docker push ghcr.io/${OWNER_LOWER}/cyna-auth-users:latest
+
+      - name: Build and push PRODUCTS image
+        run: |
+          docker build -t ghcr.io/${OWNER_LOWER}/cyna-products:latest ./products
+          docker push ghcr.io/${OWNER_LOWER}/cyna-products:latest
+
+      - name: Build and push SUBSCRIPTIONS image
+        run: |
+          docker build -t ghcr.io/${OWNER_LOWER}/cyna-subscriptions:latest ./subscriptions
+          docker push ghcr.io/${OWNER_LOWER}/cyna-subscriptions:latest

@@ -47,21 +47,28 @@ public class MediaService {
         // Traiter chaque fichier
         for (MultipartFile file : files) {
             try {
-                // On resoud le chemin du nouveau fichier
-                Path destinationFile = directory.resolve(file.getOriginalFilename());
+                // Générer un nom de fichier unique pour éviter les collisions
+                String originalFilename = file.getOriginalFilename();
+                String extension = "";
+                if (originalFilename != null && originalFilename.contains(".")) {
+                    extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+                }
+                String uniqueFilename = UUID.randomUUID().toString() + extension;
+                
+                // On résoud le chemin du nouveau fichier
+                Path destinationFile = directory.resolve(uniqueFilename);
 
                 // Transférer le fichier
                 file.transferTo(destinationFile);
 
-                // Créer l'objet Media
+                // Créer l'objet Media avec un chemin relatif standard
                 Media media = Media.builder()
-                        .name(file.getOriginalFilename())
-                        .url(this.staticLocation +"/"+ file.getOriginalFilename())
+                        .name(uniqueFilename)
+                        .url("/images/" + uniqueFilename)
                         .build();
 
                 mediaRepo.save(media);
                 images.add(media);
-
 
             } catch (IOException e) {
                 log.error("Erreur lors du transfert du fichier: {}", e.getMessage(), e);

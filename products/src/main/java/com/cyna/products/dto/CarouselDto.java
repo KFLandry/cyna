@@ -7,6 +7,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.HashSet;
 import java.util.Set;
 
 @Data
@@ -21,10 +22,19 @@ public class CarouselDto {
     private String text;
 
     @ArraySchema(schema = @Schema(type = "string", format = "binary"))
-    @NotNull(message = "Images are required")
-    private Set<MultipartFile> images;
+    private Set<MultipartFile> images = new HashSet<>(); // Initialisation avec un HashSet vide
 
     private long productId;
 
     private long categoryId;
+
+    private boolean replaceImage = false;
+
+    public boolean isReplaceImage() {
+        return replaceImage;
+    }
+
+    public void setReplaceImage(boolean replaceImage) {
+        this.replaceImage = replaceImage;
+    }
 }

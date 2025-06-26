@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -99,6 +100,44 @@ public class CategoryService {
     public String delete(long categoryId) {
         categoryRepo.deleteById(categoryId);
 
+        return "Operation successful";
+    }
+
+    public String update(long categoryId, CategoryDto categoryDto) {
+        Category category = categoryRepo.findById(categoryId).orElseThrow();
+
+        // Mise à jour des champs textuels
+        if (categoryDto.getName() != null) {
+            category.setName(categoryDto.getName());
+        }
+
+        if (categoryDto.getDescription() != null) {
+            category.setDescription(categoryDto.getDescription());
+        }
+
+        // Mise à jour des images si fournies
+        if (categoryDto.getImages() != null && !categoryDto.getImages().isEmpty()) {
+            Set<Media> newImages = mediaService.uploadFiles(categoryDto.getImages());
+            Set<Media> allImages = new HashSet<>(category.getImages());
+            allImages.addAll(newImages);
+            category.setImages(allImages);
+        }
+
+        // Suppression des images si demandée
+        if (categoryDto.getImagesToDelete() != null && !categoryDto.getImagesToDelete().isEmpty()) {
+            if (categoryDto.getImagesToDelete().size() >= category.getImages().size()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You must keep at least one image");
+            }
+
+            Set<Media> imagesToDelete = mediaService.getMediaByIds(categoryDto.getImagesToDelete());
+            Set<Media> imagesToKeep = category.getImages();
+            imagesToDelete.forEach(imagesToKeep::remove);
+            category.setImages(imagesToKeep);
+
+            mediaService.deleteImages(imagesToDelete);
+        }
+
+        categoryRepo.save(category);
         return "Operation successful";
     }
 }

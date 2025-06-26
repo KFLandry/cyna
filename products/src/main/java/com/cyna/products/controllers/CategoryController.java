@@ -39,8 +39,9 @@ public class CategoryController {
     }
 
     @PutMapping("/{categoryId}")
-    public ResponseEntity<String> update(@PathVariable long categoryId, @RequestParam String name){
-        return ResponseEntity.ok(categoryService.update(categoryId, name));
+    public ResponseEntity<String> update(@PathVariable long categoryId, @ModelAttribute CategoryDto categoryDto){
+        categoryDto.setId(categoryId); // S'assurer que l'ID est défini
+        return ResponseEntity.ok(categoryService.update(categoryId, categoryDto));
     }
 
 
@@ -52,6 +53,15 @@ public class CategoryController {
     @DeleteMapping("/{categoryId}/images")
     public ResponseEntity<String> deleteImages(@PathVariable long categoryId, @RequestBody Set<Long> imagesId) {
         return  ResponseEntity.ok(categoryService.deleteImages(categoryId, imagesId));
+    }
+
+    @PatchMapping("/{categoryId}/images/delete")
+    public ResponseEntity<String> deleteImagesFormData(
+            @PathVariable long categoryId,
+            @RequestParam(value = "imagesToDelete") List<Long> imagesToDelete
+    ) {
+        // On convertit la liste en set pour la méthode de service
+        return ResponseEntity.ok(categoryService.deleteImages(categoryId, Set.copyOf(imagesToDelete)));
     }
 
     @DeleteMapping("/{categoryId}")
