@@ -27,14 +27,21 @@ public class ProductDto {
 
     private PricingModel pricingModel;
 
-    private long amount;
+    private Long amount;
 
-    private long categoryId;
+    private Long categoryId;
 
     @ArraySchema(schema = @Schema(type = "string", format = "binary"))
     private Set<MultipartFile> images;
 
-    private ProductStatus status = ProductStatus.AVAILABLE;
-    private boolean active = true;
-    private boolean promo = false;
+    private ProductStatus status;
+    private Boolean active;
+    private Boolean promo;
+
+    public Boolean isActive() {
+        return active;
+    }
+    public Boolean isPromo() {
+        return promo;
+    }
 }

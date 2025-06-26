@@ -4,6 +4,7 @@ import com.cyna.products.dto.*;
 import com.cyna.products.models.Category;
 import com.cyna.products.models.Media;
 import com.cyna.products.models.Product;
+import com.cyna.products.models.ProductStatus;
 import com.cyna.products.repositories.ProductRepo;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.BadRequestException;
@@ -17,6 +18,7 @@ import org.springframework.web.client.RestClient;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -73,31 +75,36 @@ public class ProductService {
         if (category == null)
             throw new BadRequestException(" La categorie indexée n'existe pas!");
 
-        Product product = Product.builder()
-                .category(category)
-                .name(productDto.getName())
-                .description(productDto.getDescription())
-                .caracteristics(productDto.getCaracteristics())
-                .brand(productDto.getBrand())
-                .pricingModel(productDto.getPricingModel())
-                .amount(productDto.getAmount())
-                .status(productDto.getStatus())
-                .images(images)
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
-                .active(productDto.isActive())
-                .promo(productDto.isPromo())
-                .build();
+        try {
+            Product product = Product.builder()
+                    .category(category)
+                    .name(productDto.getName())
+                    .description(productDto.getDescription())
+                    .caracteristics(productDto.getCaracteristics())
+                    .brand(productDto.getBrand())
+                    .pricingModel(productDto.getPricingModel())
+                    .amount(productDto.getAmount())
+                    .status(Optional.ofNullable(productDto.getStatus()).orElse(ProductStatus.AVAILABLE))
+                    .images(images)
+                    .createdAt(LocalDateTime.now())
+                    .updatedAt(LocalDateTime.now())
+                    .active(Optional.ofNullable(productDto.isActive()).orElse(true))
+                    .promo(Optional.ofNullable(productDto.isPromo()).orElse(false))
+                    .build();
 
-        // On save pour avoir l'id du produit
-        product = productRepo.save(product);
+            // On save pour avoir l'id du produit
+            product = productRepo.save(product);
 
-        // On crée le produit dans Stripe
-        PriceDto priceDto = this.createStripePrice(product);
+            // On crée le produit dans Stripe
+            PriceDto priceDto = this.createStripePrice(product);
 
-        // On ajoute le priceId de stripe au produit
-        product.setPriceId(priceDto.getPriceId());
-        productRepo.save(product);
+            // On ajoute le priceId de stripe au produit
+            product.setPriceId(priceDto.getPriceId());
+            productRepo.save(product);
+        } catch (Exception e) {
+            log.error("[ProductService][create] Error while creating product", e);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Error while creating product");
+        }
 
         return "Operation successful";
 
@@ -113,7 +120,7 @@ public class ProductService {
                 .skip(page==1 ? 0 : page * size)
                 .limit(size)
                 .map(productMapper::toDto)
-                .filter(p -> (active == null|| p.isActive() == active))
+                .filter(p -> (active == null || p.isActive() == active))
                 .toList();
         return Pagination.builder()
                 .size(productRepo.countByText(text))
@@ -150,8 +157,8 @@ public class ProductService {
                         categoryService.getCategoryById(productdto.getCategoryId()) :
                         product.getCategory())
                 .amount(Optional.of(productdto.getAmount()).orElse(product.getAmount()))
-                .active(productdto.isActive())
-                .promo(productdto.isPromo())
+                .active(Optional.ofNullable(productdto.isActive()).orElse(product.isActive()))
+                .promo(Optional.ofNullable(productdto.isPromo()).orElse(product.isPromo()))
                 .images(images) // <-- Correction ici
                 .updatedAt(LocalDateTime.now())
                 .createdAt(product.getCreatedAt())
@@ -191,7 +198,7 @@ public class ProductService {
                     .retrieve()
                     .body(PriceDto.class);
 
-            log.debug("[ProductsService][CreateStripePrice] Create a stripe products. Result: {}", result);
+            log.info("[ProductsService][CreateStripePrice] Create a stripe products. Result: {}", result);
             return result;
         } catch (Exception e) {
             log.error("[StripeService][updateCustomerId] Error while creating Stripe price", e);
@@ -211,17 +218,18 @@ public class ProductService {
         }
     }
 
-    public String getServiceURI(String serviceId){
+    public URI getServiceURI(String serviceId){
         List<ServiceInstance> instances = discoveryClient.getInstances(serviceId);
         if (instances.isEmpty()) {
             log.error("No instances found for service: {}", serviceId);
+            log.error("List of available services: {}", discoveryClient.getServices());
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No instances found for service: " + serviceId);
         }
 
         ServiceInstance serviceInstance = instances.getFirst();
         log.debug("Calling auth service at: {}", serviceInstance.getServiceId());
 
-        return serviceInstance.getServiceId();
+        return serviceInstance.getUri();
     }
 
     public List<ProductGetDto> getTopProducts(int top, Boolean promo, Boolean active) {
